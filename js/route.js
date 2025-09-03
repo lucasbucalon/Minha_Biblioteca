@@ -116,8 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     event.preventDefault();
     const href = link.getAttribute("href");
-    history.pushState({}, "", href);
-    handleRoute(window.location.pathname);
+    location.hash = href; // Atualiza o hash sem recarregar a página
   }
 
   function handleRoute(path) {
@@ -138,24 +137,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.body.addEventListener("click", navigate);
 
-  window.addEventListener("popstate", () =>
-    handleRoute(window.location.pathname)
-  );
+  // Atualiza conteúdo quando o hash muda
+  window.addEventListener("hashchange", () => {
+    handleRoute(location.hash.slice(1) || "/");
+  });
 
-  handleRoute(window.location.pathname);
+  // Inicializa a rota ao carregar a página
+  handleRoute(location.hash.slice(1) || "/");
 });
-
-function initRoute() {
-  let path = window.location.pathname;
-
-  if (!path || path === "/" || path.endsWith("/index.html")) {
-    if (path.endsWith("/index.html")) {
-      history.replaceState({}, "", "/");
-    }
-    path = "/";
-  }
-
-  handleRoute(path);
-}
-
-initRoute();

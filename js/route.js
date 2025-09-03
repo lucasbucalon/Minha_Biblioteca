@@ -152,7 +152,7 @@ function initRoute() {
     if (path.endsWith("/index.html")) {
       history.replaceState({}, "", "/Home");
     }
-    path = "/";
+    path = "/Home";
   }
 
   handleRoute(path);

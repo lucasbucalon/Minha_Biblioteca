@@ -1,30 +1,50 @@
 document.addEventListener("DOMContentLoaded", () => {
   const content = document.getElementById("content");
+  const pageCache = {};
 
   async function loadPage(page) {
     const url = `pages/${page}.html`;
 
+    content.classList.add("fade-out");
     content.setAttribute("aria-busy", "true");
-    content.style.visibility = "hidden";
 
     try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`Erro ao carregar a página: ${res.status}`);
-      const html = await res.text();
+      let html;
+
+      if (pageCache[url]) {
+        html = pageCache[url];
+      } else {
+        const res = await fetch(url);
+        if (!res.ok)
+          throw new Error(`Erro ao carregar a página: ${res.status}`);
+        html = await res.text();
+        pageCache[url] = html;
+      }
 
       const temp = document.createElement("div");
       temp.innerHTML = html;
 
       await ensureStyles(temp);
 
-      content.innerHTML = temp.innerHTML;
-      executeScripts(content);
+      setTimeout(() => {
+        content.innerHTML = temp.innerHTML;
+        executeScripts(content);
+
+        content.classList.remove("fade-out");
+        content.classList.add("fade-in");
+
+        setTimeout(() => content.classList.remove("fade-in"), 300);
+      }, 200);
     } catch (err) {
       console.error("Erro ao carregar a página:", err);
-      content.innerHTML =
-        "<p>Desculpe, algo deu errado ao carregar a página.</p>";
+
+      try {
+        const res404 = await fetch("pages/404.html");
+        content.innerHTML = await res404.text();
+      } catch {
+        content.innerHTML = "<p>Página não encontrada.</p>";
+      }
     } finally {
-      content.style.visibility = "";
       content.removeAttribute("aria-busy");
     }
   }
@@ -74,8 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function parseRoute() {
     let hash = window.location.hash.substring(1).trim();
-    if (!hash) hash = "home";
-
+    if (!hash) hash = "Home/home";
     loadPage(hash);
   }
 

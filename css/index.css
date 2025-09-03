@@ -4,3 +4,12 @@
     margin: 20px 0;
   }
 }
+
+#content.fade-out {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+#content.fade-in {
+  opacity: 1;
+  transition: opacity 0.25s ease;
+}

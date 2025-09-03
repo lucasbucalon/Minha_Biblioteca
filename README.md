@@ -1,9 +1,9 @@
 # Minha_Biblioteca
 
- <h2>👋 Bem-vindo à Minha Bíblioteca</h2>
+ <h2>👋 Bem-vindo à Minha Biblioteca</h2>
  <br /><br />
       <p>
-        A <strong>Minha Bíblioteca</strong> é um projeto pessoal que foi criado
+        A <strong>Minha Biblioteca</strong> é um projeto pessoal que foi criado
         para guardar minhas ideias, projetos, anotações, animações, componentes,
         ect...Tudo o que eu for criando, desenvolvendo e aprendendo, vou guardar
         aqui, com o intuito de reultilizar em projetos futuros, ou apenas para
@@ -60,6 +60,7 @@
         </p>
       <br /><br />
       <hr />
+      <br /><br />
       <h2>❤️‍🔥 Considerações Finais</h2>
       <br /><br />
       <p>

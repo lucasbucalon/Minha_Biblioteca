@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pageCache = {};
 
   const routes = [
-    { path: /^\/$/, page: "Home/home" }, 
+    { path: /^\/Home$/, page: "Home/home" },
     { path: /^\/Botoes$/, page: "Buttons/buttons" },
     { path: /^\/Anotacoes$/, page: "Note/note" },
     { path: /^\/Sobre$/, page: "About/about" },
@@ -136,14 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPage("404/404");
   }
 
-
   document.body.addEventListener("click", navigate);
-
 
   window.addEventListener("popstate", () =>
     handleRoute(window.location.pathname)
   );
-
 
   handleRoute(window.location.pathname);
 });
@@ -152,9 +149,8 @@ function initRoute() {
   let path = window.location.pathname;
 
   if (!path || path === "/" || path.endsWith("/index.html")) {
-
     if (path.endsWith("/index.html")) {
-      history.replaceState({}, "", "/");
+      history.replaceState({}, "", "/Home");
     }
     path = "/";
   }
@@ -163,4 +159,3 @@ function initRoute() {
 }
 
 initRoute();
-

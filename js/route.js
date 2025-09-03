@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pageCache = {};
 
   const routes = [
-    { path: /^\/Home$/, page: "Home/home" },
+    { path: /^\/$/, page: "Home/home" },
     { path: /^\/Botoes$/, page: "Buttons/buttons" },
     { path: /^\/Anotacoes$/, page: "Note/note" },
     { path: /^\/Sobre$/, page: "About/about" },
@@ -150,9 +150,9 @@ function initRoute() {
 
   if (!path || path === "/" || path.endsWith("/index.html")) {
     if (path.endsWith("/index.html")) {
-      history.replaceState({}, "", "/Home");
+      history.replaceState({}, "", "/");
     }
-    path = "Home";
+    path = "/";
   }
 
   handleRoute(path);

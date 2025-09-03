@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pageCache = {};
   const loadedStyles = new Set();
 
+  // Definição das rotas
   const routes = [
     { path: /^\/$/, page: "Home/home" },
     { path: /^\/Botoes$/, page: "Buttons/buttons" },
@@ -11,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     { path: /^\/Contato$/, page: "Contact/contact" },
   ];
 
+  // Função para buscar e armazenar páginas no cache
   async function fetchPage(url) {
     if (pageCache[url]) return pageCache[url];
     const res = await fetch(url);
@@ -20,6 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return html;
   }
 
+  // Carregar e aplicar estilos sem duplicar
   function ensureStyles(root) {
     const promises = [];
     root.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
@@ -41,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return Promise.all(promises);
   }
 
+  // Executa scripts de forma segura
   function executeScripts(root) {
     root.querySelectorAll("script").forEach((old) => {
       const script = document.createElement("script");
@@ -54,50 +58,42 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function updateContent(html, param = null) {
+  // Atualiza o conteúdo, parâmetros e título
+  function updateContent(html, page, param = null) {
     const temp = document.createElement("div");
     temp.innerHTML = html;
 
     ensureStyles(temp).then(() => {
       content.classList.add("fade-out");
-      content.addEventListener(
-        "transitionend",
-        function onEnd() {
-          content.innerHTML = temp.innerHTML;
-          executeScripts(content);
 
-          if (param) {
-            content
-              .querySelectorAll("[data-param]")
-              .forEach((el) => (el.textContent = param));
-          }
+      setTimeout(() => {
+        content.innerHTML = temp.innerHTML;
+        executeScripts(content);
 
-          document.title = param
-            ? `${html.split("/")[0]} - ${param}`
-            : html.split("/")[0];
+        if (param) {
+          content
+            .querySelectorAll("[data-param]")
+            .forEach((el) => (el.textContent = param));
+        }
 
-          content.classList.remove("fade-out");
-          content.classList.add("fade-in");
-          setTimeout(() => content.classList.remove("fade-in"), 300);
-
-          content.removeEventListener("transitionend", onEnd);
-        },
-        { once: true }
-      );
+        content.classList.remove("fade-out");
+        content.classList.add("fade-in");
+        setTimeout(() => content.classList.remove("fade-in"), 300);
+      }, 200);
     });
   }
 
+  // Carrega uma página (com cache)
   async function loadPage(page, param = null) {
     content.setAttribute("aria-busy", "true");
     try {
       const html = await fetchPage(`pages/${page}.html`);
-      updateContent(html, param);
+      updateContent(html, page, param);
     } catch (err) {
       console.error(err);
       try {
         const html404 = await fetchPage("pages/404.html");
-        content.innerHTML = html404;
-        document.title = "Erro 404";
+        updateContent(html404, "Erro 404");
       } catch {
         content.innerHTML = "<p>Página não encontrada.</p>";
         document.title = "Erro";
@@ -107,15 +103,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Captura cliques nos links
   function navigate(event) {
     const link = event.target.closest("a[data-link]");
     if (!link) return;
 
     event.preventDefault();
     const href = link.getAttribute("href");
-    location.hash = href;
+    location.hash = href; // hash-based routing
   }
 
+  // Trata a rota com base na URL
   function handleRoute(path) {
     for (const route of routes) {
       const match = path.match(route.path);
@@ -127,11 +125,14 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPage("404/404");
   }
 
+  // Inicializa SPA
   document.body.addEventListener("click", navigate);
 
+  // Atualiza rota quando hash muda
   window.addEventListener("hashchange", () => {
     handleRoute(location.hash.slice(1) || "/");
   });
 
+  // Inicializa a rota ao carregar a página
   handleRoute(location.hash.slice(1) || "/");
 });

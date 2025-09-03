@@ -1,0 +1,36 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 62.5%;
+  font-family: consolas;
+}
+
+body {
+  font-size: 1.6rem;
+  font-optical-sizing: auto;
+  letter-spacing: 1px;
+  text-rendering: optimizeLegibility;
+  text-align: center;
+  padding: 5%;
+  width: 100%;
+  height: 100vh;
+  align-items: center;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  position: relative;
+  color: white;
+  background-color: #1e1e1e;
+  background-attachment: fixed;
+}
+
+hr {
+  margin: 50px 0;
+}
+
+#content {
+  padding: 50px 0;
+}

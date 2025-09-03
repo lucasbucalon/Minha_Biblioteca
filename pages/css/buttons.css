@@ -1,0 +1,13 @@
+.header_buttons {
+  p {
+    font-size: 1.8rem;
+    margin: 20px 0;
+  }
+}
+
+.buttons_container {
+  h3 {
+    margin: 20px 0;
+    font-size: 2rem;
+  }
+}

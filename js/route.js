@@ -4,11 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const loadedStyles = new Set();
 
   const routes = [
-    { path: /^\/$/, page: "Inicio/home" },
-    { path: /^\/Botoes$/, page: "Botoes/buttons" },
-    { path: /^\/Anotacoes$/, page: "Anotacoes/note" },
-    { path: /^\/Sobre$/, page: "Sobre/about" },
-    { path: /^\/Contato$/, page: "Contato/contact" },
+    { path: /^\/$/, page: "Home/home" },
+    { path: /^\/Botoes$/, page: "Buttons/buttons" },
+    { path: /^\/Anotacoes$/, page: "Note/note" },
+    { path: /^\/Sobre$/, page: "About/about" },
+    { path: /^\/Contato$/, page: "Contact/contact" },
   ];
 
   async function fetchPage(url) {
@@ -69,8 +69,8 @@ document.addEventListener("DOMContentLoaded", () => {
           .forEach((el) => (el.textContent = param));
       }
 
-      // Atualiza título
-      document.title = page.split("/")[0];
+      const pageTitle = temp.querySelector("title")?.textContent;
+      document.title = `${pageTitle}`;
 
       content.classList.remove("fade-out");
       content.classList.add("fade-in");

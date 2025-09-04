@@ -1,12 +1,16 @@
-* {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
 html {
   font-size: 62.5%;
   font-family: consolas;
+  color-scheme: light dark;
+  scroll-behavior: auto;
 }
 
 body {
@@ -14,23 +18,19 @@ body {
   font-optical-sizing: auto;
   letter-spacing: 1px;
   text-rendering: optimizeLegibility;
+  padding: 5% 5% 0 5%;
   text-align: center;
-  padding: 5%;
+  align-items: center;
+  color: white;
   width: 100%;
   height: 100vh;
-  align-items: center;
   overflow-x: hidden;
   overflow-y: scroll;
   position: relative;
-  color: white;
-  background-color: #1e1e1e;
+  background: linear-gradient(to right top, #2a2828, #1e1e1e 50%);
   background-attachment: fixed;
 }
 
 hr {
   margin: 50px 0;
-}
-
-#content {
-  padding: 50px 0;
 }

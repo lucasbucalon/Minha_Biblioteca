@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const pageCache = {};
   const loadedStyles = new Set();
 
-  // Definição das rotas
   const routes = [
     { path: /^\/$/, page: "Home/home" },
     { path: /^\/Botoes$/, page: "Buttons/buttons" },
@@ -12,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
     { path: /^\/Contato$/, page: "Contact/contact" },
   ];
 
-  // Função para buscar e armazenar páginas no cache
   async function fetchPage(url) {
     if (pageCache[url]) return pageCache[url];
     const res = await fetch(url);
@@ -22,7 +20,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return html;
   }
 
-  // Carregar e aplicar estilos sem duplicar
   function ensureStyles(root) {
     const promises = [];
     root.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
@@ -44,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return Promise.all(promises);
   }
 
-  // Executa scripts de forma segura
   function executeScripts(root) {
     root.querySelectorAll("script").forEach((old) => {
       const script = document.createElement("script");
@@ -58,7 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Atualiza o conteúdo, parâmetros e título
   function updateContent(html, page, param = null) {
     const temp = document.createElement("div");
     temp.innerHTML = html;
@@ -78,12 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         content.classList.remove("fade-out");
         content.classList.add("fade-in");
-        setTimeout(() => content.classList.remove("fade-in"), 300);
-      }, 200);
+        setTimeout(() => content.classList.remove("fade-in"), 200);
+      }, 100);
     });
   }
 
-  // Carrega uma página (com cache)
   async function loadPage(page, param = null) {
     content.setAttribute("aria-busy", "true");
     try {
@@ -103,17 +97,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Captura cliques nos links
   function navigate(event) {
     const link = event.target.closest("a[data-link]");
     if (!link) return;
 
     event.preventDefault();
     const href = link.getAttribute("href");
-    location.hash = href; // hash-based routing
+    location.hash = href;
   }
 
-  // Trata a rota com base na URL
   function handleRoute(path) {
     for (const route of routes) {
       const match = path.match(route.path);
@@ -125,14 +117,11 @@ document.addEventListener("DOMContentLoaded", () => {
     loadPage("404/404");
   }
 
-  // Inicializa SPA
   document.body.addEventListener("click", navigate);
 
-  // Atualiza rota quando hash muda
   window.addEventListener("hashchange", () => {
     handleRoute(location.hash.slice(1) || "/");
   });
 
-  // Inicializa a rota ao carregar a página
   handleRoute(location.hash.slice(1) || "/");
 });

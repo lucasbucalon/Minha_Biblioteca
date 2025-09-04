@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const content = document.getElementById("content");
   const pageCache = {};
   const loadedStyles = new Set();
+  const loadedScripts = new Set();
 
   const routes = [
     { path: /^\/$/, page: "Home/home" },
@@ -20,16 +21,14 @@ document.addEventListener("DOMContentLoaded", () => {
     return html;
   }
 
-  function ensureStyles(root) {
+  async function ensureStyles(root) {
     const promises = [];
     root.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
       const href = link.href;
       if (!href || loadedStyles.has(href)) return;
-
       loadedStyles.add(href);
       const newLink = link.cloneNode(true);
       document.head.appendChild(newLink);
-
       promises.push(
         new Promise((resolve) => {
           newLink.onload = newLink.onerror = resolve;
@@ -41,11 +40,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function executeScripts(root) {
     root.querySelectorAll("script").forEach((old) => {
+      const scriptId = old.src || old.textContent.slice(0, 30);
+      if (old.src && loadedScripts.has(old.src)) return;
+      if (old.src) loadedScripts.add(old.src);
+
       const script = document.createElement("script");
-      script.textContent = old.textContent;
       if (old.src) {
         script.src = old.src;
         script.defer = old.defer || false;
+      } else {
+        script.textContent = old.textContent;
       }
       document.body.appendChild(script);
       old.remove();
@@ -62,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       content.innerHTML = temp.innerHTML;
       executeScripts(content);
+      loadConstants(content);
 
       if (param) {
         content
@@ -69,8 +74,9 @@ document.addEventListener("DOMContentLoaded", () => {
           .forEach((el) => (el.textContent = param));
       }
 
-      const pageTitle = temp.querySelector("title")?.textContent;
-      document.title = `${pageTitle}`;
+      const pageTitle =
+        temp.querySelector("title")?.textContent || page.split("/").pop();
+      document.title = pageTitle;
 
       content.classList.remove("fade-out");
       content.classList.add("fade-in");
@@ -85,6 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const html = await fetchPage(`pages/${page}.html`);
       await updateContent(html, page, param);
+      await loadConstants(content);
     } catch (err) {
       console.error(err);
       try {
@@ -102,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function navigate(event) {
     const link = event.target.closest("a[data-link]");
     if (!link) return;
-
     event.preventDefault();
     const href = link.getAttribute("href");
     location.hash = href;
@@ -112,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const route of routes) {
       const match = path.match(route.path);
       if (match) {
-        loadPage(route.page, route.param ? match[1] : null);
+        loadPage(route.page);
         return;
       }
     }

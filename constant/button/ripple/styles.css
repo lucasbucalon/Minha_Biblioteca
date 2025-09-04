@@ -1,6 +1,6 @@
 /* Botão com Efeito Ripple */
 
-.ripple-button {
+.button-ripple {
   position: relative;
   overflow: hidden;
   padding: 1.6rem 0;
@@ -18,16 +18,16 @@
   touch-action: manipulation;
 }
 
-.ripple-button:focus-visible {
+.button-ripple:focus-visible {
   outline: 3px solid #ffeb3b;
   outline-offset: 4px;
 }
 
-.ripple-button:active {
+.button-ripple:active {
   transform: scale(0.98);
 }
 
-.ripple-button:hover {
+.button-ripple:hover {
   background-color: rgb(100, 124, 195);
 }
 

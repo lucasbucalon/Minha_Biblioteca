@@ -1,9 +1,7 @@
 // =====================
 // Captura erros globais e promessas rejeitadas
 // =====================
-// global.js
 
-// Captura erros gerais
 window.addEventListener("error", (event) => {
   const msg = event.message || "";
   const ignorePatterns = [
@@ -68,7 +66,6 @@ const observer = new IntersectionObserver(
       if (!entry.isIntersecting) return;
       const el = entry.target;
 
-      // Suporta múltiplas classes no formato categoria-nome
       const classes = Array.from(el.classList).filter((cls) =>
         cls.includes("-")
       );
@@ -81,7 +78,6 @@ const observer = new IntersectionObserver(
           await loadCSS(cssPath);
           await loadJS(jsPath);
 
-          // Inicializa o componente se houver init
           const initName = `init${name[0].toUpperCase()}${name.slice(1)}`;
           if (window.Components?.[cls]?.init) {
             window.Components[cls].init();
@@ -93,7 +89,7 @@ const observer = new IntersectionObserver(
         }
       }
 
-      observer.unobserve(el); // Não observa mais após carregar
+      observer.unobserve(el);
     });
   },
   { threshold: 0.1 }

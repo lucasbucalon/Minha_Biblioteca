@@ -5,13 +5,14 @@ window.loadConstants = async function (root = document) {
   window._loadedJs = loadedJs;
 
   const elements = root.querySelectorAll("[class*='-']");
-
   const classSet = new Set();
+
   elements.forEach((el) => {
     el.classList.forEach((cls) => {
       if (cls.includes("-")) classSet.add(cls);
     });
   });
+
   const components = [...classSet];
 
   components.forEach((comp) => {

@@ -9,11 +9,11 @@
   padding: 50px 0;
 }
 
-#content.fade-out {
+/* #content.fade-out {
   opacity: 0;
   transition: opacity 0.1s ease;
 }
 #content.fade-in {
   opacity: 1;
   transition: opacity 0.2s ease;
-}
+} */

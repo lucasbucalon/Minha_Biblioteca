@@ -1,21 +1,15 @@
-// =====================
-// Captura erros globais e promessas rejeitadas
-// =====================
-
 window.addEventListener("error", (event) => {
   const msg = event.message || "";
   const ignorePatterns = [
     "A listener indicated an asynchronous response",
     "chrome-extension",
   ];
-
-  if (ignorePatterns.some((pattern) => msg.includes(pattern))) {
+  if (ignorePatterns.some((p) => msg.includes(p))) {
     console.warn("Erro ignorado:", msg);
     event.preventDefault();
   }
 });
 
-// Captura promessas rejeitadas não tratadas
 window.addEventListener("unhandledrejection", (event) => {
   const reason = event.reason || "";
   if (
@@ -27,9 +21,6 @@ window.addEventListener("unhandledrejection", (event) => {
   }
 });
 
-// =====================
-// Cache de CSS e JS para evitar recarregamento
-// =====================
 const loadedAssets = { css: new Set(), js: new Set() };
 
 async function loadCSS(href) {
@@ -50,54 +41,33 @@ async function loadJS(src) {
     const script = document.createElement("script");
     script.src = src;
     script.defer = true;
-    script.onload = () => resolve();
+    script.onload = resolve;
     script.onerror = () => reject(`Erro ao carregar ${src}`);
     document.body.appendChild(script);
     loadedAssets.js.add(src);
   });
 }
 
-// =====================
-// Lazy-load de componentes via IntersectionObserver
-// =====================
 const observer = new IntersectionObserver(
   (entries) => {
     entries.forEach(async (entry) => {
       if (!entry.isIntersecting) return;
       const el = entry.target;
-
       const classes = Array.from(el.classList).filter((cls) =>
         cls.includes("-")
       );
       for (const cls of classes) {
         const [category, name] = cls.split("-");
-        const cssPath = `/constant/${category}/${name}/styles.css`;
-        const jsPath = `/constant/${category}/${name}/script.js`;
-
-        try {
-          await loadCSS(cssPath);
-          await loadJS(jsPath);
-
-          const initName = `init${name[0].toUpperCase()}${name.slice(1)}`;
-          if (window.Components?.[cls]?.init) {
-            window.Components[cls].init();
-          } else if (typeof window[initName] === "function") {
-            window[initName]();
-          }
-        } catch (err) {
-          console.error(err);
-        }
+        await loadCSS(`/constant/${category}/${name}/styles.css`);
+        await loadJS(`/constant/${category}/${name}/script.js`);
+        if (window.Components?.[cls]?.init) window.Components[cls].init();
       }
-
       observer.unobserve(el);
     });
   },
   { threshold: 0.1 }
 );
 
-// =====================
-// Observa todos os elementos com classes no padrão categoria-nome
-// =====================
 document.addEventListener("DOMContentLoaded", () => {
   document
     .querySelectorAll("[class*='-']")

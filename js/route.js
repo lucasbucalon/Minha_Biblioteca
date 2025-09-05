@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function fetchPage(url) {
     if (pageCache[url]) return pageCache[url];
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: "force-cache" });
     if (!res.ok) throw new Error(`Erro ao carregar a página: ${res.status}`);
     const html = await res.text();
     pageCache[url] = html;
@@ -27,31 +27,38 @@ document.addEventListener("DOMContentLoaded", () => {
       const href = link.href;
       if (!href || loadedStyles.has(href)) return;
       loadedStyles.add(href);
+
       const newLink = link.cloneNode(true);
-      document.head.appendChild(newLink);
       promises.push(
         new Promise((resolve) => {
           newLink.onload = newLink.onerror = resolve;
         })
       );
+      document.head.appendChild(newLink);
     });
     return Promise.all(promises);
   }
 
   function executeScripts(root) {
     root.querySelectorAll("script").forEach((old) => {
-      const scriptId = old.src || old.textContent.slice(0, 30);
-      if (old.src && loadedScripts.has(old.src)) return;
-      if (old.src) loadedScripts.add(old.src);
+      const src = old.src;
+      const inline = old.textContent.trim();
 
-      const script = document.createElement("script");
-      if (old.src) {
-        script.src = old.src;
-        script.defer = old.defer || false;
-      } else {
-        script.textContent = old.textContent;
+      if (src) {
+        if (loadedScripts.has(src)) return;
+        loadedScripts.add(src);
+
+        const script = document.createElement("script");
+        script.src = src;
+        script.defer = true;
+        script.onload = () => console.debug(`Script carregado: ${src}`);
+        script.onerror = () => console.error(`Erro ao carregar: ${src}`);
+        document.body.appendChild(script);
+      } else if (inline) {
+        const script = document.createElement("script");
+        script.textContent = inline;
+        document.body.appendChild(script);
       }
-      document.body.appendChild(script);
       old.remove();
     });
   }
@@ -62,28 +69,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     await ensureStyles(temp);
 
-    content.classList.add("fade-out");
-    setTimeout(() => {
-      content.innerHTML = temp.innerHTML;
-      executeScripts(content);
-      loadConstants(content);
+    content.innerHTML = temp.innerHTML;
 
-      if (param) {
-        content
-          .querySelectorAll("[data-param]")
-          .forEach((el) => (el.textContent = param));
+    executeScripts(content);
+
+    if (typeof loadConstants === "function") {
+      try {
+        loadConstants(content);
+      } catch (e) {
+        console.warn("loadConstants falhou:", e);
       }
+    }
 
-      const pageTitle =
-        temp.querySelector("title")?.textContent || page.split("/").pop();
-      document.title = pageTitle;
+    if (param) {
+      content
+        .querySelectorAll("[data-param]")
+        .forEach((el) => (el.textContent = param));
+    }
 
-      content.classList.remove("fade-out");
-      content.classList.add("fade-in");
-      setTimeout(() => content.classList.remove("fade-in"), 200);
+    document.title =
+      temp.querySelector("title")?.textContent || page.split("/").pop();
 
-      document.dispatchEvent(new Event("spa:pageLoaded"));
-    }, 100);
+    document.dispatchEvent(new Event("spa:pageLoaded"));
   }
 
   async function loadPage(page, param = null) {
@@ -91,7 +98,6 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const html = await fetchPage(`pages/${page}.html`);
       await updateContent(html, page, param);
-      await loadConstants(content);
     } catch (err) {
       console.error(err);
       try {
@@ -116,8 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleRoute(path) {
     for (const route of routes) {
-      const match = path.match(route.path);
-      if (match) {
+      if (route.path.test(path)) {
         loadPage(route.page);
         return;
       }
@@ -126,6 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.body.addEventListener("click", navigate);
+
   window.addEventListener("hashchange", () => {
     handleRoute(location.hash.slice(1) || "/");
   });

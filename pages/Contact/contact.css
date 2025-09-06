@@ -1,19 +1,12 @@
-.header_contact {
-  p {
-    font-size: 1.8rem;
-    margin: 20px;
-  }
-}
-
 .content_contact {
   ul {
-    list-style: none;
     display: flex;
     flex-direction: column;
     gap: 16px;
     padding: 24px 0;
     width: 80%;
     margin: auto;
+    text-align: center;
   }
 
   svg {
@@ -31,7 +24,6 @@
     font-size: 2rem;
     border: 1px solid white;
     border-radius: 10px;
-    text-decoration: none;
     font-weight: 500;
     transition: background 0.2s;
     gap: 20px;

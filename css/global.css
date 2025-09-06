@@ -6,11 +6,17 @@
   padding: 0;
 }
 
+:root {
+  --bg-gradient-start: #2a2828;
+  --bg-gradient-end: #1e1e1e;
+  --font-color: #ffffff;
+}
+
 html {
   font-size: 62.5%;
-  font-family: consolas;
+  font-family: consolas, monospace;
   color-scheme: light dark;
-  scroll-behavior: auto;
+  /* scroll-behavior: smooth !important ; */
 }
 
 body {
@@ -18,19 +24,68 @@ body {
   font-optical-sizing: auto;
   letter-spacing: 1px;
   text-rendering: optimizeLegibility;
-  padding: 5% 5% 0 5%;
-  text-align: center;
-  align-items: center;
-  color: white;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
+  padding: 5% 5% 0 5%;
   overflow-x: hidden;
   overflow-y: scroll;
   position: relative;
-  background: linear-gradient(to right top, #2a2828, #1e1e1e 50%);
+  color: var(--font-color);
+  background: linear-gradient(
+    to right top,
+    var(--bg-gradient-start),
+    var(--bg-gradient-end) 50%
+  );
   background-attachment: fixed;
+}
+
+#content {
+  padding: 50px 0;
+}
+
+#content.fade-out {
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+#content.fade-in {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+header {
+  text-align: center;
+  p {
+    font-size: 1.8rem;
+    margin: 20px 0;
+  }
 }
 
 hr {
   margin: 50px 0;
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 2px solid #ffeb3b;
+  outline-offset: 3px;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 60%;
+  }
 }

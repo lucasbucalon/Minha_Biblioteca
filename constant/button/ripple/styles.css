@@ -11,16 +11,10 @@
   background-color: rgb(72, 72, 255);
   border: none;
   border-radius: 10px;
-  cursor: pointer;
   outline: none;
   transition: background 0.3s, transform 0.1s;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-}
-
-.button-ripple:focus-visible {
-  outline: 3px solid #ffeb3b;
-  outline-offset: 4px;
 }
 
 .button-ripple:active {

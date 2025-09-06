@@ -6,6 +6,7 @@
     margin: 16px 0;
     background-color: #000000;
     color: #ffffff;
+    text-align: center;
   }
 
   .card p {
@@ -32,5 +33,10 @@
 </div>
 
 <script>
-  console.log("Card carregado!");
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(".card button");
+    if (!button) return;
+
+    alert("este é um componente 'card' com props");
+  });
 </script>

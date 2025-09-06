@@ -21,3 +21,35 @@ function updateBodyHeight() {
 }
 
 updateBodyHeight();
+
+// sheet.js
+
+// Remove delay 300ms em alguns navegadores mobile
+document.addEventListener("touchstart", () => {}, { passive: true });
+
+// Swipe gestures para navegação
+let touchStartX = 0;
+
+document.addEventListener(
+  "touchstart",
+  (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  },
+  { passive: true }
+);
+
+document.addEventListener(
+  "touchend",
+  (e) => {
+    let dx = e.changedTouches[0].screenX - touchStartX;
+    if (dx > 80) location.hash = "home"; // swipe direita → home
+    if (dx < -80) location.hash = "about"; // swipe esquerda → about
+  },
+  { passive: true }
+);
+
+// Loader visual para fetch de páginas
+function showLoader() {
+  const content = document.getElementById("content");
+  content.innerHTML = "<div class='loader'></div>";
+}

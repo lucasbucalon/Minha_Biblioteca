@@ -1,4 +1,3 @@
-// Defina todas as rotas aqui
 const routes = [
   { path: /^\/$/, page: "Home/home" },
   { path: /^\/Botoes$/, page: "Buttons/buttons" },

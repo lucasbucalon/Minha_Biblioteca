@@ -157,8 +157,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function enablePrefetch() {
     document.querySelectorAll("a[data-link]").forEach((link) => {
       const url = link.getAttribute("href");
-      link.addEventListener("mouseenter", () => fetchPage(`pages/${url}.html`));
-      link.addEventListener("touchstart", () => fetchPage(`pages/${url}.html`));
+      link.addEventListener(
+        "mouseenter",
+        () => fetchPage(`pages/${url}.html`),
+        { passive: true }
+      );
+      link.addEventListener(
+        "touchstart",
+        () => fetchPage(`pages/${url}.html`),
+        { passive: true }
+      );
     });
   }
 

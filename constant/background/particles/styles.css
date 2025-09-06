@@ -10,8 +10,6 @@
 
 .particle {
   position: absolute;
-  width: 2px;
-  height: 2px;
-  border-radius: 50%;
-  background-color: #fff;
+  border-radius: 100%;
+  background-color: #bc7315;
 }

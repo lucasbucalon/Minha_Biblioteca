@@ -10,7 +10,7 @@ window.Components["background-particles"] = {
       const particle = document.createElement("div");
       particle.classList.add("particle");
 
-      const size = Math.random() * 2 + 1;
+      const size = Math.random() * 4 + 1;
       particle.style.width = particle.style.height = `${size}px`;
 
       particle.style.top = `${Math.random() * container.offsetHeight}px`;

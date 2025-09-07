@@ -19,42 +19,48 @@ window.setupInstallButton = () => {
 
   let deferredPrompt;
 
-  // Armazena evento de instalação se suportado
+  // Detecta evento de instalação PWA (mobile)
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
-    deferredPrompt = e;
+    deferredPrompt = e; // guarda para uso posterior
   });
 
   installBtn.addEventListener("click", async () => {
-    const isDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    if (!isDesktop) {
-      alert("Esta ação é apenas para desktop.");
-      return;
-    }
+    if (isMobile) {
+      // Mobile: dispara prompt de instalação PWA
+      if (!deferredPrompt) {
+        alert(
+          "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporte PWA."
+        );
+        return;
+      }
 
-    if (!deferredPrompt) {
-      alert(
-        "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporte PWA."
-      );
-      return;
-    }
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
 
-    // Mostra o prompt de instalação
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        alert("Você instalou o app no seu dispositivo!");
+      } else {
+        alert("Você cancelou a instalação do app.");
+      }
 
-    if (choice.outcome === "accepted") {
-      alert("Atalho do app criado no seu desktop!");
+      deferredPrompt = null; // limpa referência
     } else {
-      alert("Você cancelou a instalação do app.");
+      // Desktop: apenas instruções, pois navegadores não disparam prompt
+      alert(
+        "Para criar um atalho do app no desktop:\n\n" +
+          "1. Abra o navegador no site.\n" +
+          "2. Clique no menu do navegador (três pontos ou hambúrguer).\n" +
+          "3. Procure 'Instalar' ou 'Adicionar à tela inicial'.\n" +
+          "4. Siga as instruções para criar o atalho."
+      );
     }
-
-    deferredPrompt = null; // limpa referência
   });
 };
 
-// Inicializa a configuração assim que o DOM estiver pronto
+// Inicializa a configuração quando o DOM estiver pronto
 document.addEventListener("DOMContentLoaded", () => {
   window.setupInstallButton();
 });

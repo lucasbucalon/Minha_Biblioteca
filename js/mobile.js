@@ -1,17 +1,15 @@
 // swipeNavigation.js
-
-/**
- * Habilita navegação por swipe no mobile.
- * @param {Object} options - Configurações do swipe
- * @param {boolean} options.enabled - Ativa ou desativa o swipe (default: true)
- * @param {string} options.left - URL ao arrastar para a esquerda (default: "#/")
- * @param {string} options.right - URL ao arrastar para a direita (default: "#/")
- * @param {string} options.up - URL ao arrastar para cima (default: "#/")
- * @param {string} options.down - URL ao arrastar para baixo (default: "#/")
- * @param {number} options.threshold - Distância mínima em pixels para ativar swipe (default: 50)
- */
 export function enableSwipeNavigation(options = {}) {
-  if (!config.enabled) return;
+  const config = {
+    enabled: options.enabled ?? true, // true = ativa, false = desativa
+    up: options.up ?? "#/",
+    down: options.down ?? "#/",
+    left: options.left ?? "#/",
+    right: options.right ?? "#/",
+    threshold: options.threshold ?? 50, // distância mínima em px para considerar swipe
+  };
+
+  if (!config.enabled) return; // se desativado, nem escuta
 
   let startX = 0;
   let startY = 0;
@@ -23,16 +21,18 @@ export function enableSwipeNavigation(options = {}) {
   }
 
   function onTouchEnd(e) {
+    if (!config.enabled) return; // se desativado, ignora qualquer movimento
+
     const touch = e.changedTouches[0];
     const dx = touch.clientX - startX;
     const dy = touch.clientY - startY;
 
-    // Detecta swipe horizontal
+    // Horizontal
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > config.threshold) {
-      if (dx > 0) location.hash = config.right; // swipe para a direita
-      else location.hash = config.left; // swipe para a esquerda
+      if (dx > 0) location.hash = config.right; // swipe para direita
+      else location.hash = config.left; // swipe para esquerda
     }
-    // Detecta swipe vertical
+    // Vertical
     else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > config.threshold) {
       if (dy > 0) location.hash = config.down; // swipe para baixo
       else location.hash = config.up; // swipe para cima

@@ -2,51 +2,34 @@ let scrollPos = 0;
 let targetScroll = 0;
 const speed = 0.2;
 
-window.addEventListener("scroll", () => {
-  targetScroll = window.scrollY;
-});
+// Detecta se o dispositivo suporta toque
+const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-function smoothScroll() {
-  scrollPos += (targetScroll - scrollPos) * speed;
+if (!isTouchDevice) {
+  // Só aplica smooth scroll em dispositivos sem toque (desktop)
+  window.addEventListener("scroll", () => {
+    targetScroll = window.scrollY;
+  });
 
-  document.body.style.transform = `translateY(${-scrollPos}px)`;
+  function smoothScroll() {
+    scrollPos += (targetScroll - scrollPos) * speed;
+    document.body.style.transform = `translateY(${-scrollPos}px)`;
+    requestAnimationFrame(smoothScroll);
+  }
 
   requestAnimationFrame(smoothScroll);
+
+  function updateBodyHeight() {
+    document.body.style.height = document.documentElement.scrollHeight + "px";
+  }
+
+  updateBodyHeight();
 }
-
-requestAnimationFrame(smoothScroll);
-
-function updateBodyHeight() {
-  document.body.style.height = document.documentElement.scrollHeight + "px";
-}
-
-updateBodyHeight();
 
 // sheet.js
 
 // Remove delay 300ms em alguns navegadores mobile
 document.addEventListener("touchstart", () => {}, { passive: true });
-
-// Swipe gestures para navegação
-let touchStartX = 0;
-
-document.addEventListener(
-  "touchstart",
-  (e) => {
-    touchStartX = e.changedTouches[0].screenX;
-  },
-  { passive: true }
-);
-
-document.addEventListener(
-  "touchend",
-  (e) => {
-    let dx = e.changedTouches[0].screenX - touchStartX;
-    if (dx > 80) location.hash = "home"; // swipe direita → home
-    if (dx < -80) location.hash = "about"; // swipe esquerda → about
-  },
-  { passive: true }
-);
 
 // Loader visual para fetch de páginas
 function showLoader() {

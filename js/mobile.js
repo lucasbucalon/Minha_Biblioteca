@@ -1,4 +1,3 @@
-// swipeNavigation.js
 export function enableSwipeNavigation(options = {}) {
   const config = {
     enabled: options.enabled ?? true, // true = ativa, false = desativa
@@ -6,8 +5,13 @@ export function enableSwipeNavigation(options = {}) {
     down: options.down ?? "#/",
     left: options.left ?? "#/",
     right: options.right ?? "#/",
-    threshold: options.threshold ?? 50, // distância mínima em px para considerar swipe
+    threshold: options.threshold ?? 50, // distância mínima em px
   };
+
+  // Armazena globalmente se swipe está ativo
+  window.swipeEnabled = config.enabled;
+
+  if (!config.enabled) return; // se desativado, não faz nada
 
   let startX = 0;
   let startY = 0;
@@ -19,24 +23,19 @@ export function enableSwipeNavigation(options = {}) {
   }
 
   function onTouchEnd(e) {
+    if (!window.swipeEnabled) return; // se desativado, ignora swipe
+
     const touch = e.changedTouches[0];
     const dx = touch.clientX - startX;
     const dy = touch.clientY - startY;
 
-    // Se swipe é menor que threshold, ignora
-    if (Math.abs(dx) < config.threshold && Math.abs(dy) < config.threshold)
-      return;
-
-    // Se swipe está desativado, apenas cancela qualquer ação
-    if (!config.enabled) return;
-
     // Horizontal
-    if (Math.abs(dx) > Math.abs(dy)) {
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > config.threshold) {
       if (dx > 0) location.hash = config.right; // swipe para direita
       else location.hash = config.left; // swipe para esquerda
     }
     // Vertical
-    else {
+    else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > config.threshold) {
       if (dy > 0) location.hash = config.down; // swipe para baixo
       else location.hash = config.up; // swipe para cima
     }

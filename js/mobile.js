@@ -1,8 +1,8 @@
 export function enableSwipeNavigation(options = {}) {
   const config = {
     enabled: options.enabled ?? true, // true = ativa, false = desativa
-    up: options.up ?? "#/",
-    down: options.down ?? "#/",
+    up: options.up ?? "",
+    down: options.down ?? "",
     left: options.left ?? "#/",
     right: options.right ?? "#/",
     threshold: options.threshold ?? 50, // distância mínima em px

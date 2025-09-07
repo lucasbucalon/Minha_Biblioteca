@@ -37,26 +37,33 @@
 <script>
   let deferredPrompt;
 
-  // Captura o evento antes do prompt ser disparado
+  // Captura evento Android/Chrome
   window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault(); // previne o prompt automático
-    deferredPrompt = e; // guarda o evento para disparar depois
+    e.preventDefault();
+    deferredPrompt = e;
   });
 
   const btn = document.getElementById("install-btn");
+
   btn.addEventListener("click", async () => {
+    // Android/Chrome
     if (deferredPrompt) {
-      deferredPrompt.prompt(); // mostra o prompt de instalação
+      deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        console.log("Usuário aceitou instalar o PWA");
-      } else {
-        console.log("Usuário cancelou a instalação");
-      }
-      deferredPrompt = null; // limpa para não reutilizar
-    } else {
+      if (outcome === "accepted") console.log("Usuário aceitou instalar o PWA");
+      else console.log("Usuário cancelou a instalação");
+      deferredPrompt = null;
+    }
+    // iOS/Safari
+    else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
       alert(
-        "Instalação não disponível. Talvez você esteja em iOS ou navegador não compatível."
+        "Para instalar este app no iOS:\n1. Toque no botão 'Compartilhar'.\n2. Selecione 'Adicionar à Tela de Início'."
+      );
+    }
+    // Outros
+    else {
+      alert(
+        "Instalação não disponível neste dispositivo. Você pode continuar usando online ou baixar o app manualmente."
       );
     }
   });

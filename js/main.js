@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
     enabled: true,
     left: "#/Botoes",
     right: "#/Fundos",
-    up: "#/",
-    down: "#/",
+    up: "",
+    down: "",
     threshold: 100,
   });
 

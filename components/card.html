@@ -19,8 +19,6 @@
     border: none;
     padding: 10px 50px;
     border-radius: 4px;
-    color: #fff;
-    cursor: pointer;
   }
 
   .card button:hover {
@@ -29,42 +27,16 @@
 </style>
 
 <div class="card">
-  <h2>Instale nosso App</h2>
-  <p>Baixe o PWA para ter acesso offline e funções extras.</p>
-  <button id="install-btn">Baixar App</button>
+  <h2>{{title}}</h2>
+  <p>{{text}}</p>
+  <button>{{buttonText}}</button>
 </div>
 
 <script>
-  let deferredPrompt;
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(".card button");
+    if (!button) return;
 
-  // Captura evento Android/Chrome
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  const btn = document.getElementById("install-btn");
-
-  btn.addEventListener("click", async () => {
-    // Android/Chrome
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") console.log("Usuário aceitou instalar o PWA");
-      else console.log("Usuário cancelou a instalação");
-      deferredPrompt = null;
-    }
-    // iOS/Safari
-    else if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
-      alert(
-        "Para instalar este app no iOS:\n1. Toque no botão 'Compartilhar'.\n2. Selecione 'Adicionar à Tela de Início'."
-      );
-    }
-    // Outros
-    else {
-      alert(
-        "Instalação não disponível neste dispositivo. Você pode continuar usando online ou baixar o app manualmente."
-      );
-    }
+    alert("este é um componente 'card' com props");
   });
 </script>

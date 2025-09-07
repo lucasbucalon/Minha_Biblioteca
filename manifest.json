@@ -2,7 +2,6 @@
   "name": "Minha Biblioteca",
   "short_name": "Biblioteca",
   "description": "Meu app incrível de SPA com offline, swipe e lazy load.",
-  "scope": "/#",
   "categories": [
     "productivity",
     "education"

@@ -1,7 +1,7 @@
 // optimize.js
 
 // ------------------------------
-// Ignorar certos erros
+// Ignorar certos erros irrelevantes
 // ------------------------------
 window.addEventListener("error", (event) => {
   const msg = event.message || "";
@@ -27,10 +27,11 @@ window.addEventListener("unhandledrejection", (event) => {
 });
 
 // ------------------------------
-// Carregamento dinâmico de assets
+// Assets carregados
 // ------------------------------
 const loadedAssets = { css: new Set(), js: new Set() };
 
+// Carrega CSS dinamicamente
 async function loadCSS(href) {
   if (loadedAssets.css.has(href)) return;
   return new Promise((resolve) => {
@@ -43,11 +44,13 @@ async function loadCSS(href) {
   });
 }
 
+// Carrega JS dinamicamente
 async function loadJS(src) {
   if (loadedAssets.js.has(src)) return;
   return new Promise((resolve, reject) => {
     const script = document.createElement("script");
     script.src = src;
+    script.type = "module";
     script.defer = true;
     script.onload = resolve;
     script.onerror = () => reject(`Erro ao carregar ${src}`);
@@ -57,32 +60,58 @@ async function loadJS(src) {
 }
 
 // ------------------------------
-// Lazy load condicional de componentes visíveis
+// IntersectionObserver para lazy ultra
 // ------------------------------
 const observer = new IntersectionObserver(
   (entries) => {
     entries.forEach(async (entry) => {
       if (!entry.isIntersecting) return;
+
       const el = entry.target;
-      const classes = Array.from(el.classList).filter((cls) =>
-        cls.includes("-")
-      );
-      for (const cls of classes) {
-        const [category, name] = cls.split("-");
-        await loadCSS(`/constant/${category}/${name}/styles.css`);
-        await loadJS(`/constant/${category}/${name}/script.js`);
-        if (window.Components?.[cls]?.init) window.Components[cls].init();
+
+      // Carrega CSS e JS de componentes baseados em classes
+      Array.from(el.classList)
+        .filter((cls) => cls.includes("-"))
+        .forEach(async (cls) => {
+          const [category, name] = cls.split("-");
+          await loadCSS(`/constant/${category}/${name}/styles.css`);
+          await loadJS(`/constant/${category}/${name}/script.js`);
+          if (window.Components?.[cls]?.init) window.Components[cls].init();
+        });
+
+      // Lazy universal para qualquer módulo marcado com data-lazy
+      if (el.dataset.lazy) {
+        import(el.dataset.lazy)
+          .then((m) => m.init?.(el))
+          .catch((err) =>
+            console.warn(`Módulo não encontrado: ${el.dataset.lazy}`, err)
+          );
       }
+
+      // Lazy universal para qualquer script.js que ainda não foi carregado
+      el.querySelectorAll("script[type='module'][src$='script.js']").forEach(
+        async (script) => {
+          await loadJS(script.src);
+        }
+      );
+
       observer.unobserve(el);
     });
   },
   { threshold: 0.1 }
 );
 
+// ------------------------------
+// Inicializa observador em todos os elementos com classes ou data-lazy
+// ------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   document
-    .querySelectorAll("[class*='-']")
+    .querySelectorAll("[class*='-'], [data-lazy]")
     .forEach((el) => observer.observe(el));
+
+  // Carrega os scripts essenciais sempre
+  loadJS("./js/components.js");
+  loadJS("./js/framework.js");
 });
 
 // ------------------------------
@@ -90,20 +119,26 @@ document.addEventListener("DOMContentLoaded", () => {
 // ------------------------------
 import { routes } from "./main.js";
 
-export async function lazyLoadRoute(hash) {
+export function lazyLoadRoute(hash) {
   hash = hash.replace(/^#/, "");
   const route = routes.find((r) => r.path.test(hash));
   if (!route) return;
 
-  // exemplo: lazy load baseado na rota
-  if (route.page.includes("Buttons")) {
-    import("./js/buttons.js").then((m) => m.initButtons?.());
-  } else if (route.page.includes("Background")) {
-    import("./js/background.js").then((m) => m.initBackground?.());
-  } else if (route.page.includes("Note")) {
-    import("./js/note.js").then((m) => m.initNote?.());
-  }
-  // Adicione aqui outras rotas que precisem de lazy load
+  // percorre elementos da página carregada
+  document.querySelectorAll("[data-lazy]").forEach((el) => {
+    import(el.dataset.lazy)
+      .then((m) => m.init?.(el))
+      .catch((err) =>
+        console.warn(`Módulo não encontrado: ${el.dataset.lazy}`)
+      );
+  });
+
+  // scripts script.js existentes na página
+  document
+    .querySelectorAll("script[type='module'][src$='script.js']")
+    .forEach(async (script) => {
+      await loadJS(script.src);
+    });
 }
 
 // ------------------------------

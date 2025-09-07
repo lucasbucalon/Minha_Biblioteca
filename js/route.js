@@ -165,11 +165,20 @@ function enablePrefetch() {
 // Inicialização
 // ------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  window.addEventListener("hashchange", () =>
-    handleRoute(location.hash.slice(1) || "/")
-  );
+  // Intercepta mudanças de hash
+  window.addEventListener("hashchange", (e) => {
+    if (window.swipeEnabled === false) {
+      // impede que a hash mude, mantém a página atual
+      history.replaceState(null, "", location.hash);
+      e.preventDefault();
+      return;
+    }
+    handleRoute(location.hash.slice(1) || "/");
+  });
+
   document.body.addEventListener("click", navigate);
 
+  // Rota inicial
   handleRoute(location.hash.slice(1) || "/");
 
   enablePrefetch();

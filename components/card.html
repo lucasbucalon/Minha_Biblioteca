@@ -19,6 +19,8 @@
     border: none;
     padding: 10px 50px;
     border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
   }
 
   .card button:hover {
@@ -27,16 +29,28 @@
 </style>
 
 <div class="card">
-  <h2>{{title}}</h2>
-  <p>{{text}}</p>
-  <button>{{buttonText}}</button>
+  <h2>Instale nosso App</h2>
+  <p>Baixe o PWA para ter acesso offline e funções extras.</p>
+  <button id="install-btn" style="display: none">Baixar App</button>
 </div>
 
 <script>
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest(".card button");
-    if (!button) return;
+  let deferredPrompt;
+  const installBtn = document.getElementById("install-btn");
+  installBtn.style.display = "none"; // esconde inicialmente
 
-    alert("este é um componente 'card' com props");
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = "inline-block"; // mostra o botão
+  });
+
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    console.log("Escolha do usuário:", choice.outcome);
+    deferredPrompt = null;
+    installBtn.style.display = "none"; // opcional: esconde após instalar
   });
 </script>

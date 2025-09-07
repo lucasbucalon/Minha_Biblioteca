@@ -19,24 +19,65 @@
     border: none;
     padding: 10px 50px;
     border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1.2rem;
   }
 
   .card button:hover {
     background-color: #0056b3;
+  }
+
+  .ios-tip {
+    margin-top: 10px;
+    font-size: 1rem;
+    color: #ffcc00;
+    display: none;
   }
 </style>
 
 <div class="card">
   <h2>{{title}}</h2>
   <p>{{text}}</p>
-  <button>{{buttonText}}</button>
+  <button id="installBtn">{{buttonText}}</button>
+  <div class="ios-tip" id="iosTip">
+    Para instalar, toque no botão "Compartilhar" e depois em "Adicionar à Tela
+    de Início".
+  </div>
 </div>
 
 <script>
-  document.addEventListener("click", (event) => {
-    const button = event.target.closest(".card button");
-    if (!button) return;
+  let deferredPrompt;
 
-    alert("este é um componente 'card' com props");
+  // Detecta Android / Chrome
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    const btn = document.getElementById("installBtn");
+    btn.style.display = "inline-block";
+
+    btn.addEventListener("click", async () => {
+      btn.style.display = "none";
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      console.log("Usuário escolheu:", choice.outcome);
+      deferredPrompt = null;
+    });
+  });
+
+  // Detecta iOS
+  const isIos = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+  const isStandalone = window.navigator.standalone;
+
+  if (isIos && !isStandalone) {
+    document.getElementById("installBtn").style.display = "none";
+    document.getElementById("iosTip").style.display = "block";
+  }
+
+  // Fallback: alerta se clicar no botão sem suporte
+  document.getElementById("installBtn").addEventListener("click", () => {
+    if (!deferredPrompt) {
+      alert("Instalação não suportada no seu dispositivo.");
+    }
   });
 </script>

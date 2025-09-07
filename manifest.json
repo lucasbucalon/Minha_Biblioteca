@@ -1,10 +1,19 @@
 {
   "name": "Minha Biblioteca",
   "short_name": "Biblioteca",
-  "description": "Um site para organizar ideias, anotações e projetos, tornando-os fáceis de consultar e reutilizar.",
+  "description": "Meu app incrível de SPA com offline, swipe e lazy load.",
+  "scope": "/#",
+  "categories": [
+    "productivity",
+    "education"
+  ],
   "lang": "pt-br",
   "start_url": "/index.html",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "fullscreen"
+  ],
   "background_color": "#1e1e1e",
   "theme_color": "#1e1e1e",
   "orientation": "portrait",
@@ -15,5 +24,13 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "com.example.app",
+      "url": "https://play.google.com/store/apps/details?id=com.example.app"
+    }
+  ],
+  "prefer_related_applications": false
 }

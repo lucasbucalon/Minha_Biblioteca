@@ -1,19 +1,16 @@
 {
-  "name": "Meu App",
-  "short_name": "App",
+  "name": "Minha Biblioteca",
+  "short_name": "Biblioteca",
+  "description": "Um site para organizar ideias, anotações e projetos, tornando-os fáceis de consultar e reutilizar.",
+  "lang": "pt-br",
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#1e1e1e",
+  "theme_color": "#1e1e1e",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "image/image.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-512.png",
+      "src": "image/frame.png",
       "sizes": "512x512",
       "type": "image/png"
     }

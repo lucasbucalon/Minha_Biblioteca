@@ -11,15 +11,6 @@
  * @param {number} options.threshold - Distância mínima em pixels para ativar swipe (default: 50)
  */
 export function enableSwipeNavigation(options = {}) {
-  const config = {
-    enabled: options.enabled ?? true,
-    left: options.left ?? "#/",
-    right: options.right ?? "#/",
-    up: options.up ?? "#/",
-    down: options.down ?? "#/",
-    threshold: options.threshold ?? 50,
-  };
-
   if (!config.enabled) return;
 
   let startX = 0;

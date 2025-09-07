@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Ativa navegação por swipe
   enableSwipeNavigation({
-    enabled: true,
+    enabled: false,
     left: "#/Botoes",
     right: "#/Fundos",
     up: "#/Sobre",

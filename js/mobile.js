@@ -9,8 +9,6 @@ export function enableSwipeNavigation(options = {}) {
     threshold: options.threshold ?? 50, // distância mínima em px para considerar swipe
   };
 
-  if (!config.enabled) return; // se desativado, nem escuta
-
   let startX = 0;
   let startY = 0;
 
@@ -21,19 +19,24 @@ export function enableSwipeNavigation(options = {}) {
   }
 
   function onTouchEnd(e) {
-    if (!config.enabled) return; // se desativado, ignora qualquer movimento
-
     const touch = e.changedTouches[0];
     const dx = touch.clientX - startX;
     const dy = touch.clientY - startY;
 
+    // Se swipe é menor que threshold, ignora
+    if (Math.abs(dx) < config.threshold && Math.abs(dy) < config.threshold)
+      return;
+
+    // Se swipe está desativado, apenas cancela qualquer ação
+    if (!config.enabled) return;
+
     // Horizontal
-    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > config.threshold) {
+    if (Math.abs(dx) > Math.abs(dy)) {
       if (dx > 0) location.hash = config.right; // swipe para direita
       else location.hash = config.left; // swipe para esquerda
     }
     // Vertical
-    else if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > config.threshold) {
+    else {
       if (dy > 0) location.hash = config.down; // swipe para baixo
       else location.hash = config.up; // swipe para cima
     }

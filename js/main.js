@@ -24,12 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Ativa navegação por swipe
   enableSwipeNavigation({
-    enabled: false,
+    enabled: true,
     left: "#/Botoes",
     right: "#/Fundos",
-    up: "#/Sobre",
-    down: "#/Contato",
-    threshold: 50,
+    up: "#/",
+    down: "#/",
+    threshold: 100,
   });
 
   // Lazy load sempre que a página SPA terminar de carregar

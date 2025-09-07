@@ -1,22 +1,11 @@
+// main.js
 import { lazyLoadRoute } from "./optimize.js";
-import { enableSwipeNavigation } from "./swipeNavigation.js";
+import { enableSwipeNavigation } from "./mobile.js";
+import { handleRoute } from "./route.js";
 
-// Ativa navegação por swipe
-enableSwipeNavigation({
-  enabled: true, // true = ativa, false = desativa
-  left: "#/Botoes",
-  right: "#/Fundos",
-  up: "#/Sobre",
-  down: "#/Contato",
-  threshold: 40, // opcional, distância mínima em pixels
-});
-
-// Evento SPA
-document.addEventListener("spa:pageLoaded", () => {
-  lazyLoadRoute(location.hash);
-});
-
-// Rotas
+// ------------------------------
+// Rotas do SPA
+// ------------------------------
 export const routes = [
   { path: /^\/$/, page: "pages/Home/home" },
   { path: /^\/Botoes$/, page: "pages/Buttons/buttons" },
@@ -25,3 +14,26 @@ export const routes = [
   { path: /^\/Sobre$/, page: "pages/About/about" },
   { path: /^\/Contato$/, page: "pages/Contact/contact" },
 ];
+
+// ------------------------------
+// Inicialização do SPA
+// ------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  // Carrega a rota inicial
+  handleRoute(location.hash.slice(1) || "/");
+
+  // Ativa navegação por swipe
+  enableSwipeNavigation({
+    enabled: true,
+    left: "#/Botoes",
+    right: "#/Fundos",
+    up: "#/Sobre",
+    down: "#/Contato",
+    threshold: 50,
+  });
+
+  // Lazy load sempre que a página SPA terminar de carregar
+  document.addEventListener("spa:pageLoaded", () => {
+    lazyLoadRoute(location.hash);
+  });
+});

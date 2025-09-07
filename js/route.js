@@ -1,5 +1,5 @@
 // route.js
-import { routes } from "./main.js"; // agora funciona
+import { routes } from "./main.js";
 
 const content = document.getElementById("content");
 const pageCache = {};
@@ -118,17 +118,18 @@ function navigate(event) {
   if (!link) return;
   event.preventDefault();
   const href = link.getAttribute("href");
-  location.hash = href;
+  location.hash = href.startsWith("#") ? href : `#${href}`;
 }
 
 function handleRoute(path) {
+  path = path.startsWith("/") ? path : `/${path}`;
   for (const route of routes) {
     if (route.path.test(path)) {
       loadPage(route.page);
       return;
     }
   }
-  loadPage("404/404");
+  loadPage("pages/404/404");
 }
 
 // ------------------------------
@@ -139,7 +140,6 @@ function enablePrefetch() {
     let url = link.getAttribute("href"); // ex: "#/Botoes"
     if (url.startsWith("#")) url = url.slice(1); // remove #
 
-    // buscar o page correspondente nas rotas
     const route = routes.find((r) => r.path.test(url));
     if (!route) return;
 
@@ -161,6 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   document.body.addEventListener("click", navigate);
 
+  // Rota inicial
   handleRoute(location.hash.slice(1) || "/");
 
   enablePrefetch();
@@ -170,4 +171,4 @@ document.addEventListener("DOMContentLoaded", () => {
 // ------------------------------
 // Exportações
 // ------------------------------
-export { fetchPage, loadPage, pageCache, updateContent };
+export { fetchPage, loadPage, pageCache, updateContent, handleRoute };

@@ -17,24 +17,44 @@ window.setupInstallButton = () => {
 
   installBtn.style.display = "inline-block"; // sempre visível
 
+  let deferredPrompt;
+
+  // Armazena evento de instalação se suportado
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
-    window.deferredPrompt = e; // guarda evento para usar depois
+    deferredPrompt = e;
   });
 
   installBtn.addEventListener("click", async () => {
-    if (!window.deferredPrompt) {
+    const isDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    if (!isDesktop) {
+      alert("Esta ação é apenas para desktop.");
+      return;
+    }
+
+    if (!deferredPrompt) {
       alert(
-        "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporta PWA."
+        "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporte PWA."
       );
       return;
     }
 
-    window.deferredPrompt.prompt(); // mostra prompt de instalação
-    const choice = await window.deferredPrompt.userChoice;
-    if (choice.outcome === "dismissed") {
+    // Mostra o prompt de instalação
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+
+    if (choice.outcome === "accepted") {
+      alert("Atalho do app criado no seu desktop!");
+    } else {
       alert("Você cancelou a instalação do app.");
     }
-    window.deferredPrompt = null;
+
+    deferredPrompt = null; // limpa referência
   });
 };
+
+// Inicializa a configuração assim que o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", () => {
+  window.setupInstallButton();
+});

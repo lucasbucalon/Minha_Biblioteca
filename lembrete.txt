@@ -1,64 +1,35 @@
-🔧 Atualizações necessárias
-1. Prefetch → experiência rápida
+<script>
+  let deferredPrompt;
 
- Implementar prefetch on hover/touch em todos os links (mouseenter, touchstart).
+  const installBtn = document.getElementById("install-btn");
 
- Manter cache (pageCache) para evitar fetch duplicado.
+  // Sempre mostra o botão
+  installBtn.style.display = "inline-block";
 
- Talvez criar um limite (ex: não prefetchar mais que X páginas por vez).
+  // Armazena o evento de instalação se o navegador permitir
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+  });
 
-2. History Router → URLs limpas
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) {
+      alert(
+        "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporta PWA."
+      );
+      return;
+    }
 
- Migrar de location.hash para history.pushState.
+    // Mostra o prompt de instalação
+    deferredPrompt.prompt();
 
- Alterar o listener de rota para popstate.
+    const choice = await deferredPrompt.userChoice;
+    if (choice.outcome === "accepted") {
+      console.log("Usuário aceitou instalar o app!");
+    } else {
+      alert("Você cancelou a instalação do app.");
+    }
 
- Ajustar navigateTo(path) para usar pushState + carregar página.
-
- Configurar servidor para fallback (/* → index.html) senão vai dar 404 ao recarregar.
-
-3. Lazy Loading → só carrega o que precisa
-
- Separar JS de cada página em chunks.
-
- Usar import() dinâmico ao entrar em cada rota.
-
- Continuar usando lazy load de estilos (já existente).
-
- Opcional: carregar imagens pesadas com loading="lazy".
-
-4. Router Config → organização estilo framework
-
- Transformar routes de array simples em objeto robusto:
-
-const routes = [
-  { path: "/", page: "home.html", title: "Home", guard: null, layout: "main" },
-  { path: "/login", page: "login.html", title: "Login", guard: "guestOnly", layout: "auth" }
-];
-
-
- Suporte para guards (auth, permissões).
-
- Suporte para layouts diferentes (main, auth, etc.).
-
- Middleware antes e depois da navegação (beforeEnter, afterEnter).
-
-5. Extra → Progressive Enhancement
-
- Servir versão estática de cada página (HTML pronto).
-
- Se o usuário não tiver JS, o site ainda abre (sem SPA, mas funcional).
-
- Melhor para SEO + acessibilidade.
-
-📌 Resumo da ordem prática para implementar:
-
-Prefetch (rápido e fácil).
-
-History Router (URLs limpas).
-
-Router Config (organização).
-
-Lazy Loading via import().
-
-Progressive Enhancement (opcional, mais avançado).
+    deferredPrompt = null; // limpa o evento
+  });
+</script>

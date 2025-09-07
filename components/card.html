@@ -33,39 +33,3 @@
   <p>Baixe o PWA para ter acesso offline e funções extras.</p>
   <button id="install-btn">Baixar App</button>
 </div>
-
-<script>
-  let deferredPrompt;
-
-  const installBtn = document.getElementById("install-btn");
-
-  // Sempre mostra o botão
-  installBtn.style.display = "inline-block";
-
-  // Armazena o evento de instalação se o navegador permitir
-  window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-  });
-
-  installBtn.addEventListener("click", async () => {
-    if (!deferredPrompt) {
-      alert(
-        "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporta PWA."
-      );
-      return;
-    }
-
-    // Mostra o prompt de instalação
-    deferredPrompt.prompt();
-
-    const choice = await deferredPrompt.userChoice;
-    if (choice.outcome === "accepted") {
-      console.log("Usuário aceitou instalar o app!");
-    } else {
-      alert("Você cancelou a instalação do app.");
-    }
-
-    deferredPrompt = null; // limpa o evento
-  });
-</script>

@@ -12,7 +12,8 @@
     {
       "src": "image/Frame.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

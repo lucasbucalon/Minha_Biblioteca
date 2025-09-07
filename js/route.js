@@ -1,75 +1,74 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const content = document.getElementById("content");
-  const pageCache = {};
-  const loadedStyles = new Set();
-  const loadedScripts = new Set();
+// route.js
+import { routes } from "./main.js"; // agora funciona
 
-  // ------------------------------
-  // Fetch + cache de páginas
-  // ------------------------------
-  async function fetchPage(url) {
-    if (pageCache[url]) return pageCache[url];
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Erro ao carregar: ${url}`);
-    const html = await res.text();
-    pageCache[url] = html;
-    return html;
-  }
+const content = document.getElementById("content");
+const pageCache = {};
+const loadedStyles = new Set();
+const loadedScripts = new Set();
 
-  // ------------------------------
-  // Carrega CSS se ainda não carregado
-  // ------------------------------
-  async function ensureStyles(root) {
-    const promises = [];
-    root.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
-      const href = link.href;
-      if (!href || loadedStyles.has(href)) return;
-      loadedStyles.add(href);
+// ------------------------------
+// Fetch + cache de páginas
+// ------------------------------
+async function fetchPage(url) {
+  if (pageCache[url]) return pageCache[url];
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Erro ao carregar: ${url}`);
+  const html = await res.text();
+  pageCache[url] = html;
+  return html;
+}
 
-      const newLink = link.cloneNode(true);
-      document.head.appendChild(newLink);
-      promises.push(
-        new Promise((resolve) => {
-          newLink.onload = newLink.onerror = resolve;
-        })
-      );
-    });
-    return Promise.all(promises);
-  }
+// ------------------------------
+// Carrega CSS se ainda não carregado
+// ------------------------------
+async function ensureStyles(root) {
+  const promises = [];
+  root.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
+    const href = link.href;
+    if (!href || loadedStyles.has(href)) return;
+    loadedStyles.add(href);
 
-  // ------------------------------
-  // Executa scripts
-  // ------------------------------
-  function executeScripts(root) {
-    root.querySelectorAll("script").forEach((old) => {
-      const scriptId = old.src || old.textContent.slice(0, 30);
-      if (old.src && loadedScripts.has(old.src)) return;
-      if (old.src) loadedScripts.add(old.src);
+    const newLink = link.cloneNode(true);
+    document.head.appendChild(newLink);
+    promises.push(
+      new Promise((resolve) => {
+        newLink.onload = newLink.onerror = resolve;
+      })
+    );
+  });
+  return Promise.all(promises);
+}
 
-      const script = document.createElement("script");
-      if (old.src) {
-        script.src = old.src;
-        script.defer = true;
-      } else {
-        script.textContent = old.textContent;
-      }
-      document.body.appendChild(script);
-      old.remove();
-    });
-  }
+// ------------------------------
+// Executa scripts
+// ------------------------------
+function executeScripts(root) {
+  root.querySelectorAll("script").forEach((old) => {
+    if (old.src && loadedScripts.has(old.src)) return;
+    if (old.src) loadedScripts.add(old.src);
 
-  // ------------------------------
-  // Atualiza o content
-  // ------------------------------
-  async function updateContent(html, page) {
-    const temp = document.createElement("div");
-    temp.innerHTML = html;
+    const script = document.createElement("script");
+    if (old.src) {
+      script.src = old.src;
+      script.defer = true;
+    } else {
+      script.textContent = old.textContent;
+    }
+    document.body.appendChild(script);
+    old.remove();
+  });
+}
 
-    await ensureStyles(temp);
+// ------------------------------
+// Atualiza o content (fade opcional)
+async function updateContent(html, page, useFade = true) {
+  const temp = document.createElement("div");
+  temp.innerHTML = html;
+  await ensureStyles(temp);
 
+  const render = () => {
     content.innerHTML = temp.innerHTML;
     executeScripts(content);
-
     if (window.loadConstants) loadConstants(content);
 
     const pageTitle =
@@ -77,73 +76,86 @@ document.addEventListener("DOMContentLoaded", () => {
     document.title = pageTitle;
 
     document.dispatchEvent(new Event("spa:pageLoaded"));
-  }
+  };
 
-  // ------------------------------
-  // Carrega uma página
-  // ------------------------------
-  async function loadPage(page) {
-    try {
-      const html = await fetchPage(`pages/${page}.html`);
-      await updateContent(html, page);
-    } catch (err) {
-      console.error(err);
-      try {
-        const html404 = await fetchPage("pages/404.html");
-        await updateContent(html404, "Erro 404");
-      } catch {
-        content.innerHTML = "<p>Página não encontrada.</p>";
-        document.title = "Erro";
-      }
-    }
-  }
-
-  async function updateContent(html, page, param = null) {
-    const content = document.getElementById("content");
-    const temp = document.createElement("div");
-    temp.innerHTML = html;
-
-    await ensureStyles(temp);
-
+  if (useFade) {
     content.classList.add("fade-out");
     setTimeout(() => {
-      content.innerHTML = temp.innerHTML;
-      executeScripts(content);
-      if (window.loadConstants) loadConstants(content);
-
-      const pageTitle =
-        temp.querySelector("title")?.textContent || page.split("/").pop();
-      document.title = pageTitle;
-
+      render();
       content.classList.remove("fade-out");
       content.classList.add("fade-in");
       setTimeout(() => content.classList.remove("fade-in"), 200);
-
-      document.dispatchEvent(new Event("spa:pageLoaded"));
     }, 100);
+  } else {
+    render();
   }
+}
 
-  // ------------------------------
-  // Navegação com hash
-  // ------------------------------
-  function navigate(event) {
-    const link = event.target.closest("a[data-link]");
-    if (!link) return;
-    event.preventDefault();
-    const href = link.getAttribute("href");
-    location.hash = href;
-  }
-
-  function handleRoute(path) {
-    for (const route of routes) {
-      if (route.path.test(path)) {
-        loadPage(route.page);
-        return;
-      }
+// ------------------------------
+// Carrega uma página
+// ------------------------------
+async function loadPage(page) {
+  try {
+    const html = await fetchPage(`${page}.html`);
+    await updateContent(html, page);
+  } catch (err) {
+    console.error(err);
+    try {
+      const html404 = await fetchPage("pages/404.html");
+      await updateContent(html404, "Erro 404", false);
+    } catch {
+      content.innerHTML = "<p>Página não encontrada.</p>";
+      document.title = "Erro";
     }
-    loadPage("404/404");
   }
+}
 
+// ------------------------------
+// Navegação com hash
+// ------------------------------
+function navigate(event) {
+  const link = event.target.closest("a[data-link]");
+  if (!link) return;
+  event.preventDefault();
+  const href = link.getAttribute("href");
+  location.hash = href;
+}
+
+function handleRoute(path) {
+  for (const route of routes) {
+    if (route.path.test(path)) {
+      loadPage(route.page);
+      return;
+    }
+  }
+  loadPage("404/404");
+}
+
+// ------------------------------
+// Prefetch inteligente
+// ------------------------------
+function enablePrefetch() {
+  document.querySelectorAll("a[data-link]").forEach((link) => {
+    let url = link.getAttribute("href"); // ex: "#/Botoes"
+    if (url.startsWith("#")) url = url.slice(1); // remove #
+
+    // buscar o page correspondente nas rotas
+    const route = routes.find((r) => r.path.test(url));
+    if (!route) return;
+
+    link.addEventListener("mouseenter", () => fetchPage(`${route.page}.html`), {
+      passive: true,
+    });
+    link.addEventListener("touchstart", () => fetchPage(`${route.page}.html`), {
+      passive: true,
+    });
+  });
+}
+
+// ------------------------------
+// Inicialização
+// ------------------------------
+document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("hashchange", () =>
     handleRoute(location.hash.slice(1) || "/")
   );
@@ -151,25 +163,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   handleRoute(location.hash.slice(1) || "/");
 
-  // ------------------------------
-  // Prefetch on hover/touch
-  // ------------------------------
-  function enablePrefetch() {
-    document.querySelectorAll("a[data-link]").forEach((link) => {
-      const url = link.getAttribute("href");
-      link.addEventListener(
-        "mouseenter",
-        () => fetchPage(`pages/${url}.html`),
-        { passive: true }
-      );
-      link.addEventListener(
-        "touchstart",
-        () => fetchPage(`pages/${url}.html`),
-        { passive: true }
-      );
-    });
-  }
-
   enablePrefetch();
   document.addEventListener("spa:pageLoaded", enablePrefetch);
 });
+
+// ------------------------------
+// Exportações
+// ------------------------------
+export { fetchPage, loadPage, pageCache, updateContent };

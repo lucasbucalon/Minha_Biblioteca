@@ -61,6 +61,7 @@ function executeScripts(root) {
 
 // ------------------------------
 // Atualiza o content (fade opcional)
+// ------------------------------
 async function updateContent(html, page, useFade = true) {
   const temp = document.createElement("div");
   temp.innerHTML = html;
@@ -100,6 +101,8 @@ async function loadPage(page) {
     await updateContent(html, page);
   } catch (err) {
     console.error(err);
+    // Se o swipe está desativado, não carrega 404
+    if (window.swipeEnabled === false) return;
     try {
       const html404 = await fetchPage("pages/404.html");
       await updateContent(html404, "Erro 404", false);
@@ -123,13 +126,19 @@ function navigate(event) {
 
 function handleRoute(path) {
   path = path.startsWith("/") ? path : `/${path}`;
-  for (const route of routes) {
-    if (route.path.test(path)) {
-      loadPage(route.page);
-      return;
-    }
+  const route = routes.find((r) => r.path.test(path));
+
+  // Se swipe estiver desativado, permanece na mesma página
+  if (!route && window.swipeEnabled === false) {
+    // mantém hash atual
+    return;
   }
-  loadPage("pages/404/404");
+
+  if (route) {
+    loadPage(route.page);
+  } else {
+    loadPage("pages/404/404");
+  }
 }
 
 // ------------------------------
@@ -137,8 +146,8 @@ function handleRoute(path) {
 // ------------------------------
 function enablePrefetch() {
   document.querySelectorAll("a[data-link]").forEach((link) => {
-    let url = link.getAttribute("href"); // ex: "#/Botoes"
-    if (url.startsWith("#")) url = url.slice(1); // remove #
+    let url = link.getAttribute("href");
+    if (url.startsWith("#")) url = url.slice(1);
 
     const route = routes.find((r) => r.path.test(url));
     if (!route) return;
@@ -161,7 +170,6 @@ document.addEventListener("DOMContentLoaded", () => {
   );
   document.body.addEventListener("click", navigate);
 
-  // Rota inicial
   handleRoute(location.hash.slice(1) || "/");
 
   enablePrefetch();

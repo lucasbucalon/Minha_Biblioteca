@@ -99,7 +99,7 @@ export async function loadPage(page) {
   } catch (err) {
     console.error(err);
     try {
-      const html404 = await fetchPage("pages/404.html");
+      const html404 = await fetchPage("pages/off/404.html");
       await updateContent(html404, "Erro 404", false);
     } catch {
       content.innerHTML = "<p>Página não encontrada.</p>";

@@ -1,6 +1,6 @@
 // sw.js
-const AUTO_UPDATE = false; // 🔴 coloque "true" quando quiser ativar atualização automática
-const CACHE_NAME = "spa-cache-v3";
+const AUTO_UPDATE = true; // 🔴 coloque "true" quando quiser ativar atualização automática
+const CACHE_NAME = "spa-cache-v4";
 const URLS_TO_CACHE = [
   "/",
   "/index.html",

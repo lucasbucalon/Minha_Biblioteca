@@ -1,8 +1,10 @@
-const CACHE_NAME = "spa-cache-v2"; // nova versão = limpa caches antigos
+// sw.js
+const AUTO_UPDATE = false; // 🔴 coloque "true" quando quiser ativar atualização automática
+const CACHE_NAME = "spa-cache-v3";
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
-  "/pages/off/offline.html", // fallback offline
+  "/pages/off/offline.html",
   "/css/global.css",
   "/js/route.js",
   "/js/main.js",
@@ -10,92 +12,73 @@ const URLS_TO_CACHE = [
   "/js/framework.js",
   "/js/optimize.js",
   "/js/pwa.js",
+  "/js/sheet.js",
+  "/js/localstorage.js",
 ];
 
 // ------------------------------
-// Instalação: cache inicial
+// Instalação
 // ------------------------------
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return Promise.allSettled(
-        URLS_TO_CACHE.map((url) =>
-          fetch(url)
-            .then((response) => {
-              if (response.ok) {
-                return cache.put(url, response.clone());
-              }
-            })
-            .catch(() => {
-              console.warn(`Falhou ao cachear: ${url}`);
-            })
-        )
-      );
-    })
-  );
+  if (!AUTO_UPDATE) {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.addAll(URLS_TO_CACHE);
+      })
+    );
+  }
   self.skipWaiting();
 });
 
 // ------------------------------
-// Ativação: limpa caches antigos
+// Ativação
 // ------------------------------
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            console.log("Cache antigo removido:", key);
-            return caches.delete(key);
-          }
-        })
-      )
-    )
-  );
+  if (AUTO_UPDATE) {
+    // se auto-update ativo, limpa todos os caches velhos
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+    );
+  } else {
+    // modo cache normal: remove apenas caches antigos
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys.map((key) => key !== CACHE_NAME && caches.delete(key))
+          )
+        )
+    );
+  }
   self.clients.claim();
 });
 
 // ------------------------------
-// Estratégia de cache para fetch
+// Estratégia fetch
 // ------------------------------
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
-
-  // Ignorar requisições que não sejam http/https (chrome-extension, data:, etc.)
-  if (!request.url.startsWith("http")) {
-    return;
-  }
-
-  // Navegação SPA: sempre serve index.html no offline
-  if (request.mode === "navigate") {
+  if (AUTO_UPDATE) {
+    // 🔄 sempre tenta rede, só usa cache se offline
     event.respondWith(
-      fetch(request).catch(
-        () =>
-          caches.match("/index.html") || caches.match("/pages/off/offline.html")
-      )
+      fetch(event.request).catch(() => caches.match(event.request))
     );
-    return;
+  } else {
+    // 📦 cache-first
+    event.respondWith(
+      caches.match(event.request).then((resp) => {
+        return (
+          resp ||
+          fetch(event.request).then((networkResp) => {
+            return caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, networkResp.clone());
+              return networkResp;
+            });
+          })
+        );
+      })
+    );
   }
-
-  // Para outros requests: cache-first com fallback network
-  event.respondWith(
-    caches.match(request).then((resp) => {
-      if (resp) return resp;
-
-      return fetch(request)
-        .then((networkResp) => {
-          if (!networkResp || !networkResp.ok) return networkResp;
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, networkResp.clone());
-            return networkResp;
-          });
-        })
-        .catch(() => {
-          // Se for um recurso crítico, devolve offline.html
-          if (request.destination === "document") {
-            return caches.match("/pages/off/offline.html");
-          }
-        });
-    })
-  );
 });

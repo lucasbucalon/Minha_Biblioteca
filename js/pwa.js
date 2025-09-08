@@ -3,7 +3,7 @@
 // Registra o Service Worker
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
-    .register("/sw.js")
+    .register("/sw.js", { updateViaCache: "none" })
     .then(() => console.log("Service Worker registrado com sucesso!"))
     .catch((err) => console.error("Falha ao registrar SW:", err));
 }
@@ -59,7 +59,12 @@ export function setupInstallButton() {
   installBtn.addEventListener("click", async () => {
     if (!deferredPrompt) {
       alert(
-        "Ainda não é possível instalar. Aguarde alguns segundos navegando na página ou use o menu do navegador (Adicionar à Tela Inicial)."
+        "Seu Dispositivo desktop não suporta instalação deste App.\n" +
+          "Para instalar, siga as instruções:\n\n" +
+          "1. Abra o navegador no site.\n" +
+          "2. Abra o menu do navegador (três pontos).\n" +
+          "3. Procure 'Instalar' ou 'Adicionar à Tela de Início'.\n" +
+          "4. Siga as instruções."
       );
       return;
     }

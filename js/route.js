@@ -94,7 +94,7 @@ export async function updateContent(html, page, useFade = true) {
 
 export async function loadPage(page) {
   try {
-    const html = await fetchPage(`pages/${page}.html`);
+    const html = await fetchPage(`${page}.html`);
     await updateContent(html, page, true);
   } catch (err) {
     console.error(err);
@@ -140,7 +140,7 @@ export function enablePrefetch() {
     // encontra rota correspondente (para pegar page)
     const route = routes.find((r) => r.path.test(url));
     if (!route) return;
-    const target = () => fetchPage(`pages/${route.page}.html`).catch(() => {});
+    const target = () => fetchPage(`${route.page}.html`).catch(() => {});
     link.addEventListener("mouseenter", target, { passive: true });
     link.addEventListener("touchstart", target, { passive: true });
   });

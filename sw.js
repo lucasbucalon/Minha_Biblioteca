@@ -2,7 +2,7 @@ const CACHE_NAME = "spa-cache-v2"; // nova versão = limpa caches antigos
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
-  "/offline.html", // fallback offline
+  "/pages/off/offline.html", // fallback offline
   "/css/global.css",
   "/js/route.js",
   "/js/main.js",
@@ -61,11 +61,17 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
+  // Ignorar requisições que não sejam http/https (chrome-extension, data:, etc.)
+  if (!request.url.startsWith("http")) {
+    return;
+  }
+
   // Navegação SPA: sempre serve index.html no offline
   if (request.mode === "navigate") {
     event.respondWith(
       fetch(request).catch(
-        () => caches.match("/index.html") || caches.match("/offline.html")
+        () =>
+          caches.match("/index.html") || caches.match("/pages/off/offline.html")
       )
     );
     return;
@@ -78,7 +84,7 @@ self.addEventListener("fetch", (event) => {
 
       return fetch(request)
         .then((networkResp) => {
-          // Cacheia dinamicamente recursos novos
+          if (!networkResp || !networkResp.ok) return networkResp;
           return caches.open(CACHE_NAME).then((cache) => {
             cache.put(request, networkResp.clone());
             return networkResp;
@@ -87,7 +93,7 @@ self.addEventListener("fetch", (event) => {
         .catch(() => {
           // Se for um recurso crítico, devolve offline.html
           if (request.destination === "document") {
-            return caches.match("/offline.html");
+            return caches.match("/pages/off/offline.html");
           }
         });
     })

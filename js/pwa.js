@@ -17,44 +17,50 @@ window.setupInstallButton = () => {
 
   installBtn.style.display = "inline-block"; // sempre visível
 
-  let deferredPrompt;
-
-  // Armazena evento de instalação se suportado
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
-    deferredPrompt = e;
+    window.deferredPrompt = e; // guarda evento para usar depois
   });
 
   installBtn.addEventListener("click", async () => {
-    const isDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    if (!isDesktop) {
-      alert("Esta ação é apenas para desktop.");
-      return;
-    }s
-
-    if (!deferredPrompt) {
+    if (!window.deferredPrompt) {
       alert(
-        "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporte PWA."
+        "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporta PWA."
       );
       return;
     }
 
-    // Mostra o prompt de instalação
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-
-    if (choice.outcome === "accepted") {
-      alert("Atalho do app criado no seu desktop!");
-    } else {
+    window.deferredPrompt.prompt(); // mostra prompt de instalação
+    const choice = await window.deferredPrompt.userChoice;
+    if (choice.outcome === "dismissed") {
       alert("Você cancelou a instalação do app.");
     }
-
-    deferredPrompt = null; // limpa referência
+    window.deferredPrompt = null;
   });
 };
+let deferredPrompt;
 
-// Inicializa a configuração assim que o DOM estiver pronto
-document.addEventListener("DOMContentLoaded", () => {
-  window.setupInstallButton();
+const installBtn = document.getElementById("install-btn");
+
+// Sempre mostra o botão
+installBtn.style.display = "inline-block";
+
+// Armazena o evento de instalação se o navegador permitir
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+installBtn.addEventListener("click", async () => {
+  // Mostra o prompt de instalação
+  deferredPrompt.prompt();
+
+  const choice = await deferredPrompt.userChoice;
+  if (choice.outcome === "accepted") {
+    console.log("Usuário aceitou instalar o app!");
+  } else {
+    alert("Você cancelou a instalação do app.");
+  }
+
+  deferredPrompt = null; // limpa o evento
 });

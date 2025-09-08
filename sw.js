@@ -1,10 +1,15 @@
-const CACHE_NAME = "spa-cache-v1";
+const CACHE_NAME = "spa-cache-v2"; // nova versão = limpa caches antigos
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
   "/offline.html", // fallback offline
   "/css/global.css",
   "/js/route.js",
+  "/js/main.js",
+  "/js/components.js",
+  "/js/framework.js",
+  "/js/optimize.js",
+  "/js/pwa.js",
 ];
 
 // ------------------------------
@@ -13,22 +18,22 @@ const URLS_TO_CACHE = [
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Tenta adicionar cada arquivo individualmente para evitar falha total
-      return Promise.all(
+      return Promise.allSettled(
         URLS_TO_CACHE.map((url) =>
           fetch(url)
             .then((response) => {
-              if (!response.ok) throw new Error(`Falha ao buscar ${url}`);
-              return cache.put(url, response);
+              if (response.ok) {
+                return cache.put(url, response.clone());
+              }
             })
-            .catch((err) =>
-              console.warn(`Não foi possível adicionar ao cache: ${url}`, err)
-            )
+            .catch(() => {
+              console.warn(`Falhou ao cachear: ${url}`);
+            })
         )
       );
     })
   );
-  self.skipWaiting(); // ativa imediatamente
+  self.skipWaiting();
 });
 
 // ------------------------------
@@ -36,35 +41,52 @@ self.addEventListener("install", (event) => {
 // ------------------------------
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key !== CACHE_NAME)
-            .map((key) => caches.delete(key))
-        )
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log("Cache antigo removido:", key);
+            return caches.delete(key);
+          }
+        })
       )
+    )
   );
   self.clients.claim();
 });
 
 // ------------------------------
-// Intercepta requisições
+// Estratégia de cache para fetch
 // ------------------------------
 self.addEventListener("fetch", (event) => {
+  const { request } = event;
+
+  // Navegação SPA: sempre serve index.html no offline
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request).catch(
+        () => caches.match("/index.html") || caches.match("/offline.html")
+      )
+    );
+    return;
+  }
+
+  // Para outros requests: cache-first com fallback network
   event.respondWith(
-    caches.match(event.request).then((resp) => {
+    caches.match(request).then((resp) => {
       if (resp) return resp;
 
-      return fetch(event.request)
+      return fetch(request)
         .then((networkResp) => {
-          // opcional: podemos cachear dinamicamente aqui
-          return networkResp;
+          // Cacheia dinamicamente recursos novos
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, networkResp.clone());
+            return networkResp;
+          });
         })
         .catch(() => {
-          // fallback offline apenas para navegação
-          if (event.request.mode === "navigate") {
+          // Se for um recurso crítico, devolve offline.html
+          if (request.destination === "document") {
             return caches.match("/offline.html");
           }
         });

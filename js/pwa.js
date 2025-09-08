@@ -8,53 +8,85 @@ if ("serviceWorker" in navigator) {
     .catch((err) => console.error("Falha ao registrar SW:", err));
 }
 
-// ------------------------------
-// Configura botão de instalação PWA
-// ------------------------------
-window.setupInstallButton = () => {
+// pwa.js
+let deferredPrompt = null;
+
+export function setupInstallButton() {
   const installBtn = document.getElementById("install-btn");
   if (!installBtn) return;
 
   installBtn.style.display = "inline-block"; // sempre visível
 
-  let deferredPrompt;
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
 
-  // Armazena evento de instalação se suportado
+  // ------------------------------
+  // iOS Safari -> instruções manuais
+  // ------------------------------
+  if (isIos && !isInStandalone) {
+    installBtn.textContent = "Adicionar à Tela Inicial";
+    installBtn.onclick = () => {
+      alert(
+        "No iPhone/iPad:\n\n1. Toque em 'Compartilhar' (ícone quadrado com seta).\n2. Escolha 'Adicionar à Tela de Início'."
+      );
+    };
+    return;
+  }
+
+  // ------------------------------
+  // Evento capturado quando suportado (Android/Chrome/Edge)
+  // ------------------------------
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    console.log("Evento beforeinstallprompt capturado!");
   });
 
+  // ------------------------------
+  // Se já estiver instalado → botão vira 'Atualizar'
+  // ------------------------------
+  if (isInStandalone) {
+    installBtn.textContent = "Atualizar App";
+    installBtn.onclick = () => location.reload(true);
+    return;
+  }
+
+  // ------------------------------
+  // Clique no botão
+  // ------------------------------
   installBtn.addEventListener("click", async () => {
-    const isDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    if (!isDesktop) {
-      alert("Esta ação é apenas para desktop.");
-      return;
-    }
-
     if (!deferredPrompt) {
       alert(
-        "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporte PWA."
+        "Ainda não é possível instalar. Aguarde alguns segundos navegando na página ou use o menu do navegador (Adicionar à Tela Inicial)."
       );
       return;
     }
 
-    // Mostra o prompt de instalação
     deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
 
     if (choice.outcome === "accepted") {
-      alert("Atalho do app criado no seu desktop!");
+      console.log("Usuário aceitou instalar o app!");
     } else {
       alert("Você cancelou a instalação do app.");
     }
 
-    deferredPrompt = null; // limpa referência
+    deferredPrompt = null;
   });
-};
 
-// Inicializa a configuração assim que o DOM estiver pronto
-document.addEventListener("DOMContentLoaded", () => {
-  window.setupInstallButton();
-});
+  // ------------------------------
+  // Evento app instalado
+  // ------------------------------
+  window.addEventListener("appinstalled", () => {
+    console.log("App instalado!");
+    if (installBtn) {
+      installBtn.textContent = "Atualizar App";
+      installBtn.onclick = () => location.reload(true);
+    }
+  });
+}
+
+// compatibilidade com outros módulos
+window.setupInstallButton = setupInstallButton;

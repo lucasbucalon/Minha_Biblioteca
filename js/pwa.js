@@ -1,66 +1,74 @@
 // pwa.js
+let deferredPrompt = null;
 
-// Registra o Service Worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("/sw.js")
-    .then(() => console.log("Service Worker registrado com sucesso!"))
-    .catch((err) => console.error("Falha ao registrar SW:", err));
-}
-
-// ------------------------------
-// Configura botão de instalação PWA
-// ------------------------------
-window.setupInstallButton = () => {
+export function setupInstallButton() {
   const installBtn = document.getElementById("install-btn");
   if (!installBtn) return;
 
-  installBtn.style.display = "inline-block"; // sempre visível
+  installBtn.style.display = "inline-block";
 
-  let deferredPrompt;
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isInStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
 
-  // Detecta evento de instalação PWA (mobile)
+  // iOS: instruções (não tem beforeinstallprompt)
+  if (isIos && !isInStandalone) {
+    installBtn.textContent = "Adicionar à Tela Inicial";
+    installBtn.onclick = () => {
+      alert(
+        "No iPhone/iPad:\n\n1. Toque em 'Compartilhar' (ícone quadrado com seta).\n2. Escolha 'Adicionar à Tela de Início'."
+      );
+    };
+    return;
+  }
+
+  // PWA prompt suportado
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
-    deferredPrompt = e; // guarda para uso posterior
+    deferredPrompt = e;
+    // manter botão visível
   });
 
+  // Se já estiver rodando standalone -> atualizar
+  if (isInStandalone) {
+    installBtn.textContent = "Atualizar App";
+    installBtn.onclick = () => location.reload(true);
+    return;
+  }
+
+  // Clique botão
   installBtn.addEventListener("click", async () => {
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      // Mobile: dispara prompt de instalação PWA
-      if (!deferredPrompt) {
-        alert(
-          "Não é possível instalar o app agora. Talvez já esteja instalado ou seu navegador não suporte PWA."
-        );
-        return;
-      }
-
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-
-      if (choice.outcome === "accepted") {
-        alert("Você instalou o app no seu dispositivo!");
-      } else {
-        alert("Você cancelou a instalação do app.");
-      }
-
-      deferredPrompt = null; // limpa referência
-    } else {
-      // Desktop: apenas instruções, pois navegadores não disparam prompt
+    // se não há prompt guardado: fallback desktop manual
+    if (!deferredPrompt) {
       alert(
         "Para criar um atalho do app no desktop:\n\n" +
           "1. Abra o navegador no site.\n" +
-          "2. Clique no menu do navegador (três pontos ou hambúrguer).\n" +
-          "3. Procure 'Instalar' ou 'Adicionar à tela inicial'.\n" +
-          "4. Siga as instruções para criar o atalho."
+          "2. Abra o menu do navegador (três pontos).\n" +
+          "3. Procure 'Instalar' ou 'Adicionar à Tela de Início'.\n" +
+          "4. Siga as instruções."
       );
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if (choice.outcome === "accepted") {
+      console.log("Usuário aceitou instalar o app!");
+    } else {
+      alert("Você cancelou a instalação do app.");
+    }
+    deferredPrompt = null;
+  });
+
+  window.addEventListener("appinstalled", () => {
+    console.log("App instalado!");
+    if (installBtn) {
+      installBtn.textContent = "Atualizar App";
+      installBtn.onclick = () => location.reload(true);
     }
   });
-};
+}
 
-// Inicializa a configuração quando o DOM estiver pronto
-document.addEventListener("DOMContentLoaded", () => {
-  window.setupInstallButton();
-});
+// Expor global (compatibilidade com framework/components)
+window.setupInstallButton = setupInstallButton;

@@ -1,18 +1,28 @@
 // localstorage.js
+// salva pageCache no localStorage para persistência entre visitas
 
-const pageCache = {}; // cache em memória
+export const persistedCache = {
+  data: {},
+};
 
-function saveCache() {
-  localStorage.setItem("spaCache", JSON.stringify(pageCache));
+export function saveCache() {
+  try {
+    localStorage.setItem("spaCache", JSON.stringify(persistedCache.data));
+  } catch (e) {
+    // localStorage pode falhar em private mode
+    console.warn("saveCache falhou:", e);
+  }
 }
 
-function loadCache() {
-  const cache = localStorage.getItem("spaCache");
-  if (cache) Object.assign(pageCache, JSON.parse(cache));
+export function loadCache() {
+  try {
+    const raw = localStorage.getItem("spaCache");
+    if (raw) persistedCache.data = JSON.parse(raw);
+  } catch (e) {
+    console.warn("loadCache falhou:", e);
+  }
 }
 
-// Carrega cache ao iniciar
+// auto load/save
 loadCache();
-
-// Salva cache antes de sair
 window.addEventListener("beforeunload", saveCache);

@@ -1,5 +1,5 @@
 // route.js
-import { routes } from "./main.js";
+import { routes } from "./routes.js";
 
 const content = document.getElementById("content");
 const pageCache = {}; // cache em memória

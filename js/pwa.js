@@ -9,82 +9,79 @@ if ("serviceWorker" in navigator) {
 }
 
 // pwa.js
-let deferredPrompt = null;
-
 window.setupInstallButton = () => {
   const installBtn = document.getElementById("install-btn");
   if (!installBtn) return;
 
   installBtn.style.display = "inline-block";
 
-  // 1 - Detectar iOS (não suporta beforeinstallprompt)
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isInStandalone = window.matchMedia(
-    "(display-mode: standalone)"
-  ).matches;
+  let deferredPrompt;
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+  const isDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-  if (isIos && !isInStandalone) {
-    installBtn.textContent = "Adicionar à Tela Inicial";
-    installBtn.onclick = () => {
-      alert(
-        "No iPhone/iPad:\n\n1. Toque em 'Compartilhar' (ícone quadrado com seta).\n2. Escolha 'Adicionar à Tela de Início'."
-      );
-    };
-    return; // encerra aqui para iOS
-  }
+  // Atualiza texto do botão se já instalado
+  installBtn.textContent = isStandalone ? "Atualizar App" : "Baixar App";
 
-  // 2 - Guardar evento para Android/desktop compatível
+  // Android / outros mobile que suportam beforeinstallprompt
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
   });
 
-  // 3 - Se já está instalado → botão vira "Atualizar"
-  if (isInStandalone) {
-    installBtn.textContent = "Atualizar App";
-    installBtn.onclick = () => {
-      location.reload(true); // força buscar versão nova
-    };
-    return;
-  }
-
-  // 4 - Clique no botão
   installBtn.addEventListener("click", async () => {
-    if (!deferredPrompt) {
-      // Se for desktop sem suporte
-      if (!/Android/i.test(navigator.userAgent)) {
-        alert(
-          "Para criar um atalho do app no desktop:\n\n" +
-            "1. Abra o navegador no site.\n" +
-            "2. Clique no menu (três pontos).\n" +
-            "3. Procure 'Instalar' ou 'Adicionar à tela inicial'.\n" +
-            "4. Siga as instruções."
-        );
-      } else {
-        alert(
-          "Não é possível instalar agora. Talvez já esteja instalado ou o navegador não suporta PWA."
-        );
-      }
+    // Desktop
+    if (isDesktop) {
+      alert(
+        "Para criar um atalho do app no desktop:\n\n" +
+          "1. Abra o navegador no site.\n" +
+          "2. Clique no menu do navegador (três pontos ou hambúrguer).\n" +
+          "3. Procure 'Instalar' ou 'Adicionar à tela inicial'.\n" +
+          "4. Siga as instruções para criar o atalho."
+      );
       return;
     }
 
-    // Dispara prompt oficial
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-
-    if (choice.outcome === "accepted") {
-      console.log("Usuário aceitou instalar o app!");
-    } else {
-      alert("Você cancelou a instalação do app.");
+    // iOS
+    if (isIOS) {
+      alert(
+        "Para instalar o app no iPhone/iPad:\n" +
+          "1. Toque no botão de compartilhar.\n" +
+          "2. Selecione 'Adicionar à Tela de Início'."
+      );
+      return;
     }
 
-    deferredPrompt = null;
-  });
+    // Mobile Android / PWA
+    if (deferredPrompt) {
+      // Se já estiver instalado, forçar atualização via SW
+      if (isStandalone && "serviceWorker" in navigator) {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (registration) {
+          registration.update();
+          alert("App atualizado! Recarregando...");
+          window.location.reload();
+        }
+        return;
+      }
 
-  // 5 - Quando instalação completar
-  window.addEventListener("appinstalled", () => {
-    console.log("App instalado!");
-    installBtn.textContent = "Atualizar App";
-    installBtn.onclick = () => location.reload(true);
+      deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      if (choice.outcome === "accepted") {
+        alert("App instalado com sucesso!");
+        installBtn.textContent = "Atualizar App";
+      } else {
+        alert("Você cancelou a instalação do app.");
+      }
+      deferredPrompt = null;
+    } else {
+      alert("Não é possível instalar o app agora. Talvez já esteja instalado.");
+    }
   });
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+  window.setupInstallButton();
+});

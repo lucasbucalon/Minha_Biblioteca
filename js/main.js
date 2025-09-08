@@ -1,6 +1,6 @@
 // main.js
 import { lazyLoadRoute } from "./optimize.js";
-import { enableSwipeNavigation } from "./swipeNavigation.js";
+import { enableSwipeNavigation } from "./mobile.js";
 import { handleRoute } from "./route.js"; // função exportada de route.js
 
 // Rotas exportadas em arquivo próprio (routes.js) para evitar ciclo import

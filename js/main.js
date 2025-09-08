@@ -18,7 +18,7 @@ export const routes = [
 document.addEventListener("DOMContentLoaded", () => {
   // configura swipe (padrões — troque as hashes abaixo se quiser)
   enableSwipeNavigation({
-    enabled: true,
+    enabled: false,
     left: "#/Botoes",
     right: "#/Fundos",
     up: null, // desativa vertical

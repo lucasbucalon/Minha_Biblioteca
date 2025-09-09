@@ -20,12 +20,12 @@ export const config = {
 // Definição das Rotas
 // ------------------------------
 export const routes = [
-  { path: /^\/$/, page: "routes/Home/home" },
-  { path: /^\/Botoes$/, page: "routes/Buttons/buttons" },
-  { path: /^\/Fundos$/, page: "routes/Background/background" },
-  { path: /^\/Anotacoes$/, page: "routes/Note/note" },
-  { path: /^\/Sobre$/, page: "routes/About/about" },
-  { path: /^\/Contato$/, page: "routes/Contact/contact" },
+  { path: /^\/$/, page: "pages/Home/home" },
+  { path: /^\/Botoes$/, page: "pages/Buttons/buttons" },
+  { path: /^\/Fundos$/, page: "pages/Background/background" },
+  { path: /^\/Anotacoes$/, page: "pages/Note/note" },
+  { path: /^\/Sobre$/, page: "pages/About/about" },
+  { path: /^\/Contato$/, page: "pages/Contact/contact" },
 
   // especiais
   { path: /^\/404$/, page: config.pages.error404 },

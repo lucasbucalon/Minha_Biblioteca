@@ -1,0 +1,75 @@
+<style>
+  footer {
+    padding: 30px;
+    background-color: #000000;
+    color: #ffffff;
+    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    position: absolute;
+    left: 0;
+    right: 0;
+
+    .footer_left,
+    .footer_right {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      padding: 0 20px;
+    }
+
+    .footer_down {
+      width: 100%;
+      margin-top: 80px;
+    }
+
+    p {
+      font-size: 1.8rem;
+    }
+
+    button {
+      background-color: #007bff;
+      border: none;
+      padding: 15px 50px;
+      border-radius: 4px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 1.8rem;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  }
+
+  @media screen and (max-width: 768px) {
+    footer {
+      flex-direction: column;
+      align-items: center;
+      gap: 50px;
+
+      .footer_left,
+      .footer_right {
+        width: 100%;
+        padding: 0;
+      }
+    }
+  }
+</style>
+
+<footer>
+  <div class="footer_left">
+    <h2>Instale nosso App</h2>
+
+    <button id="install-btn">Baixar App</button>
+  </div>
+  <div class="footer_right">
+    <h2>Ou</h2>
+    <p>
+      Crie um atalho do nosso App PWA, para acessar o site sem precisar
+      instalar, caso o seu dispositivo não for compativel.
+    </p>
+  </div>
+  <div class="footer_down">copyright 2023 Lucas Bucalon</div>
+</footer>

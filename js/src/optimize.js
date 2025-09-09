@@ -69,8 +69,8 @@ const observer = new IntersectionObserver(
         .filter((cls) => cls.includes("-"))
         .forEach(async (cls) => {
           const [category, name] = cls.split("-");
-          const css = `${config.frameworkDir}/${category}/${name}/styles.css`;
-          const js = `${config.frameworkDir}/${category}/${name}/script.js`;
+          const css = `${config.modelsDir}/${category}/${name}/styles.css`;
+          const js = `${config.modelsDir}/${category}/${name}/script.js`;
           try {
             await loadCSS(css);
             await loadJS(js);

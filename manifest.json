@@ -18,7 +18,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "image/Frame.png",
+      "src": "public/image/Frame.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

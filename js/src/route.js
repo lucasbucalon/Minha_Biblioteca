@@ -1,5 +1,5 @@
 // route.js
-import { routes } from "./main.js";
+import { routes, config } from "./main.js";
 
 const content = document.getElementById("content");
 const pageCache = {}; // cache em memória
@@ -101,7 +101,7 @@ async function loadPage(page) {
   } catch (err) {
     console.error(err);
     try {
-      const html404 = await fetchPage("pages/404.html");
+      const html404 = await fetchPage(`${config.pages.error404}.html`);
       await updateContent(html404, "Erro 404", false);
     } catch {
       content.innerHTML = "<p>Página não encontrada.</p>";

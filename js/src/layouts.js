@@ -1,11 +1,12 @@
 // components.js
+import { config } from "./main.js";
 // Carrega componentes HTML via <div data-component="Card" data-props='{}'></div>
 const loadedStyles = new Set();
 const loadedScripts = new Set();
 const componentCache = new Map();
 
 function getComponentPath(name, type = "html") {
-  return `${window.location.origin}/components/${name}.${type}`;
+  return `${window.location.origin}/${config.componentsDir}/${name}.${type}`;
 }
 
 export async function loadComponent(componentName, container, props = {}) {

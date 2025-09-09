@@ -92,19 +92,23 @@ export async function updateContent(html, page, useFade = true) {
   }
 }
 
-export async function loadPage(page) {
+async function loadPage(page) {
   try {
+    document.dispatchEvent(new Event("spa:pageStart")); // 🚀 mostra loader
+
     const html = await fetchPage(`${page}.html`);
-    await updateContent(html, page, true);
+    await updateContent(html, page);
   } catch (err) {
     console.error(err);
     try {
-      const html404 = await fetchPage("pages/off/404.html");
+      const html404 = await fetchPage("pages/404.html");
       await updateContent(html404, "Erro 404", false);
     } catch {
       content.innerHTML = "<p>Página não encontrada.</p>";
       document.title = "Erro";
     }
+  } finally {
+    document.dispatchEvent(new Event("spa:pageLoaded")); // 🚀 esconde loader
   }
 }
 

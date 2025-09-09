@@ -34,3 +34,17 @@ document.addEventListener("DOMContentLoaded", () => {
   // garantir que a rota inicial seja processada (route.js já faz isso, mas manter redundância segura)
   handleRoute(location.hash.slice(1) || "/");
 });
+
+function showLoader() {
+  document.getElementById("page-loader").style.display = "flex";
+}
+
+function hideLoader() {
+  document.getElementById("page-loader").style.display = "none";
+}
+
+// Quando começar a trocar de rota
+document.addEventListener("spa:pageStart", showLoader);
+
+// Quando terminar de carregar a página
+document.addEventListener("spa:pageLoaded", hideLoader);

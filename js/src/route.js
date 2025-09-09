@@ -126,7 +126,7 @@ function navigate(event) {
 // Match de rota e load
 export function handleRoute(path) {
   // path vindo sem '#', ex: "/Botoes" ou "Botoes"
-  if (!path.startsWith("/")) path = `/${path}`;
+  if (!path.startsWith("/")) path = `./${path}`;
   for (const route of routes) {
     if (route.path.test(path)) {
       loadPage(route.page);

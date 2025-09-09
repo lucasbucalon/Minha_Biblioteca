@@ -2,18 +2,18 @@
 const AUTO_UPDATE = true; // 🔴 coloque "true" quando quiser ativar atualização automática
 const CACHE_NAME = "spa-cache-v4";
 const URLS_TO_CACHE = [
-  "/",
-  "/index.html",
-  "/pages/off/offline.html",
-  "/css/global.css",
-  "/js/route.js",
-  "/js/main.js",
-  "/js/components.js",
-  "/js/framework.js",
-  "/js/optimize.js",
-  "/js/pwa.js",
-  "/js/sheet.js",
-  "/js/localstorage.js",
+  "./",
+  "./index.html",
+  "./pages/off/offline.html",
+  "./css/global.css",
+  "./js/route.js",
+  "./js/main.js",
+  "./js/components.js",
+  "./js/framework.js",
+  "./js/optimize.js",
+  "./js/pwa.js",
+  "./js/sheet.js",
+  "./js/localstorage.js",
 ];
 
 // ------------------------------

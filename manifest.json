@@ -7,7 +7,7 @@
     "education"
   ],
   "lang": "pt-br",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "display_override": [
     "standalone",
@@ -18,7 +18,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "public/image/Frame.png",
+      "src": "./public/image/Frame.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

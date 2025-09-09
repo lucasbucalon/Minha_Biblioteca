@@ -7,12 +7,12 @@ import { handleRoute } from "./route.js";
 // Configuração global do App
 // ------------------------------
 export const config = {
-  componentsDir: "components/layouts", // pasta onde ficam os components
-  frameworkDir: "components/models", // pasta onde ficam utilitários/framework
+  componentsDir: "./components/layouts", // pasta onde ficam os components
+  frameworkDir: "./components/models", // pasta onde ficam utilitários/framework
   pages: {
-    error404: "pages/off/404", // rota de erro
-    fallback: "pages/off/offline", // rota de fallback offline
-    loading: "pages/off/load", // tela de carregamento
+    error404: "./pages/off/404", // rota de erro
+    fallback: "./pages/off/offline", // rota de fallback offline
+    loading: "./pages/off/load", // tela de carregamento
   },
 };
 
@@ -20,12 +20,12 @@ export const config = {
 // Definição das Rotas
 // ------------------------------
 export const routes = [
-  { path: /^\/$/, page: "pages/Home/home" },
-  { path: /^\/Botoes$/, page: "pages/Buttons/buttons" },
-  { path: /^\/Fundos$/, page: "pages/Background/background" },
-  { path: /^\/Anotacoes$/, page: "pages/Note/note" },
-  { path: /^\/Sobre$/, page: "pages/About/about" },
-  { path: /^\/Contato$/, page: "pages/Contact/contact" },
+  { path: /^\/$/, page: "./pages/Home/home" },
+  { path: /^\/Botoes$/, page: "./pages/Buttons/buttons" },
+  { path: /^\/Fundos$/, page: "./pages/Background/background" },
+  { path: /^\/Anotacoes$/, page: "./pages/Note/note" },
+  { path: /^\/Sobre$/, page: "./pages/About/about" },
+  { path: /^\/Contato$/, page: "./pages/Contact/contact" },
 
   // especiais
   { path: /^\/404$/, page: config.pages.error404 },

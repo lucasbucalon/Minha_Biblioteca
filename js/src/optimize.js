@@ -69,8 +69,8 @@ const observer = new IntersectionObserver(
         .filter((cls) => cls.includes("-"))
         .forEach(async (cls) => {
           const [category, name] = cls.split("-");
-          const css = `/${config.frameworkDir}/${category}/${name}/styles.css`;
-          const js = `/${config.frameworkDir}/${category}/${name}/script.js`;
+          const css = `${config.frameworkDir}/${category}/${name}/styles.css`;
+          const js = `${config.frameworkDir}/${category}/${name}/script.js`;
           try {
             await loadCSS(css);
             await loadJS(js);
@@ -109,8 +109,8 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach((el) => observer.observe(el));
 
   // garantir script essenciais carregados (não duplicar)
-  loadJS("/js/src/layouts.js").catch(() => {});
-  loadJS("/js/src/models.js").catch(() => {});
+  loadJS("./js/src/layouts.js").catch(() => {});
+  loadJS("./js/src/models.js").catch(() => {});
 });
 
 // Lazy load por rota: carrega módulos marcados com data-lazy na página corrente

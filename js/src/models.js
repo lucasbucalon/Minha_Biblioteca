@@ -21,7 +21,7 @@ window.loadConstants = async function (root = document) {
   // carregar CSS primeiro (não await para todos os scripts)
   components.forEach((comp) => {
     const [category, name] = comp.split("-");
-    const cssPath = `/${config.frameworkDir}/${category}/${name}/styles.css`;
+    const cssPath = `${config.frameworkDir}/${category}/${name}/styles.css`;
     if (!loadedCss.has(cssPath)) {
       const link = document.createElement("link");
       link.rel = "stylesheet";
@@ -34,7 +34,7 @@ window.loadConstants = async function (root = document) {
   // carregar scripts (aguardar para poder chamar init após carregamento)
   const promises = components.map((comp) => {
     const [category, name] = comp.split("-");
-    const jsPath = `/${config.frameworkDir}/${category}/${name}/script.js`;
+    const jsPath = `${config.frameworkDir}/${category}/${name}/script.js`;
     if (loadedJs.has(jsPath)) {
       // se já carregado, tenta executar init
       if (window.Components?.[comp]?.init) window.Components[comp].init();

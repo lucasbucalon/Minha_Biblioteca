@@ -6,7 +6,7 @@ const loadedScripts = new Set();
 const componentCache = new Map();
 
 function getComponentPath(name, type = "html") {
-  return `${window.location.origin}/${config.layoutsDir}/${name}.${type}`;
+  return `${window.location.origin}/${config.dirs.layouts}/${name}.${type}`;
 }
 
 export async function loadComponent(componentName, container, props = {}) {

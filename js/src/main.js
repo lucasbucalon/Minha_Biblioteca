@@ -17,13 +17,14 @@ export const config = {
     policy: "./pages/gateway/policy",
   },
   useChildren: true,
-  defaultChild: "/Init",
   persistentChild: null,
+  defaultChild: "/Init",
+  dirsChild: "./app/Home/home",
 };
 
 export const routes = [
   { path: /^\/$/, page: "./site/site" },
-  { path: /^\/Home$/, page: "./app/Home/home" },
+  { path: /^\/Home$/, page: config.dirsChild },
 ];
 
 export const childrenRoutes = [

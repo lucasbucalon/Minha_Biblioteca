@@ -1,91 +1,127 @@
+// utils.js
+
+// Cache de páginas, estilos e scripts carregados
 const pageCache = {};
 const loadedStyles = new Set();
 const loadedScripts = new Set();
 
+/**
+ * Busca HTML de uma rota e usa cache se disponível
+ * @param {string} url - URL da página
+ * @returns {Promise<string>}
+ */
 export async function fetchPage(url) {
   if (pageCache[url]) return pageCache[url];
+
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Erro ao carregar: ${url}`);
+
   const html = await res.text();
   pageCache[url] = html;
   return html;
 }
 
-async function ensureStyles(root) {
+/**
+ * Aplica apenas os estilos que ainda não foram carregados
+ * @param {HTMLElement} root - elemento temporário contendo o HTML do child
+ */
+export async function ensureStyles(root) {
   const promises = [];
+
   root.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
     const href = link.href;
     if (!href || loadedStyles.has(href)) return;
+
     loadedStyles.add(href);
     const newLink = link.cloneNode(true);
     document.head.appendChild(newLink);
+
     promises.push(
-      new Promise((resolve) => (newLink.onload = newLink.onerror = resolve))
+      new Promise((resolve) => {
+        newLink.onload = resolve;
+        newLink.onerror = resolve;
+      })
     );
   });
+
   return Promise.all(promises);
 }
 
-function executeScripts(root) {
-  root.querySelectorAll("script").forEach((old) => {
-    const src = old.src;
+/**
+ * Executa scripts do child dentro do wrapper
+ * Evita recarregar scripts externos duplicados
+ * @param {HTMLElement} wrapper
+ */
+export function executeScripts(wrapper) {
+  wrapper.querySelectorAll("script").forEach((oldScript) => {
+    const src = oldScript.src;
+
     if (src && loadedScripts.has(src)) {
-      old.remove();
+      oldScript.remove();
       return;
     }
     if (src) loadedScripts.add(src);
 
     const script = document.createElement("script");
+
     if (src) {
       script.src = src;
       script.defer = true;
     } else {
-      script.textContent = old.textContent;
+      script.textContent = oldScript.textContent;
     }
-    document.body.appendChild(script);
-    old.remove();
+
+    wrapper.appendChild(script);
+    oldScript.remove();
   });
 }
 
+/**
+ * Atualiza o conteúdo dinâmico do SPA de forma universal
+ * @param {HTMLElement} container - container principal
+ * @param {string} html - HTML carregado da rota
+ * @param {string} page - nome da página
+ */
 export async function updateChildren(container, html, page) {
   const temp = document.createElement("div");
   temp.innerHTML = html;
+
+  // Aplica estilos
   await ensureStyles(temp);
 
-  const render = () => {
-    const newContent = temp.querySelector("#children-content") || temp;
+  // Pega apenas o conteúdo dinâmico do child (#children)
+  const newContent = temp.querySelector("#children") || temp;
 
-    // Cria wrapper interno se não existir
-    let wrapper = container.querySelector("#children-wrapper");
-    if (!wrapper) {
-      wrapper = document.createElement("div");
-      wrapper.id = "children-wrapper";
-      container.appendChild(wrapper);
+  // Cria o wrapper interno se não existir
+  let wrapper = container.querySelector("#children-wrapper");
+  if (!wrapper) {
+    wrapper = document.createElement("div");
+    wrapper.id = "children-wrapper";
+    container.appendChild(wrapper);
+  }
+
+  // Substitui conteúdo usando DocumentFragment (evita repaint desnecessário)
+  const fragment = document.createDocumentFragment();
+  fragment.append(...newContent.childNodes);
+  wrapper.replaceChildren(fragment);
+
+  // Executa scripts do child
+  executeScripts(wrapper);
+
+  // Executa loadConstants se existir
+  if (typeof window.loadConstants === "function") {
+    try {
+      window.loadConstants(wrapper);
+    } catch (e) {
+      console.warn(e);
     }
+  }
 
-    // Substitui apenas o conteúdo do wrapper
-    wrapper.replaceChildren(...newContent.childNodes);
+  // Atualiza título da página
+  const title =
+    temp.querySelector("title")?.textContent || page.split("/").pop();
+  document.title = title;
 
-    // Executa scripts do novo conteúdo
-    executeScripts(wrapper);
-
-    // Executa constantes se existirem
-    if (window.loadConstants) {
-      try {
-        window.loadConstants(wrapper);
-      } catch (e) {
-        console.warn(e);
-      }
-    }
-
-    // Atualiza título
-    const title =
-      temp.querySelector("title")?.textContent || page.split("/").pop();
-    document.title = title;
-
-    // Dispara evento SPA
-    document.dispatchEvent(new Event("spa:pageLoaded"));
-  };
-
-  render();
+  // Dispara evento SPA
+  document.dispatchEvent(new Event("spa:pageLoaded"));
 }

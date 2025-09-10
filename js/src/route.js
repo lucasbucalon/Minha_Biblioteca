@@ -1,17 +1,22 @@
+// route.js
 import { routes, childrenRoutes, config } from "./main.js";
 import { fetchPage, updateChildren } from "./utils.js";
 
 const content = document.getElementById("content");
 
 // ------------------------------
-// Carregar layout principal
+// Carregar layout principal (somente uma vez)
 // ------------------------------
+const loadedLayouts = new Set();
 async function loadLayout(page) {
   try {
-    const html = await fetchPage(
-      page.endsWith(".html") ? page : `${page}.html`
-    );
-    content.innerHTML = html;
+    if (!loadedLayouts.has(page)) {
+      const html = await fetchPage(
+        page.endsWith(".html") ? page : `${page}.html`
+      );
+      content.innerHTML = html;
+      loadedLayouts.add(page);
+    }
   } catch (err) {
     console.error(err);
     content.innerHTML = "<p>Página não encontrada.</p>";
@@ -20,32 +25,33 @@ async function loadLayout(page) {
 }
 
 // ------------------------------
-// Carregar child
+// Carregar child dentro de #children-wrapper
 // ------------------------------
 async function loadChild(path) {
   if (!path.startsWith("/")) path = `/${path}`;
-  const route = childrenRoutes.find((r) => r.path.test(path));
-  const container = document.getElementById("children");
 
-  if (!container) return;
+  const route = childrenRoutes.find((r) => r.path.test(path));
+  const wrapper = document.querySelector("#children-wrapper");
+
+  if (!wrapper) return;
 
   if (route) {
     try {
       const html = await fetchPage(
         route.page.endsWith(".html") ? route.page : `${route.page}.html`
       );
-      await updateChildren(container, html, route.page);
+      await updateChildren(wrapper, html, route.page);
     } catch (err) {
       console.error(err);
-      container.innerHTML = "<p>Página não encontrada.</p>";
+      wrapper.innerHTML = "<p>Página não encontrada.</p>";
     }
   } else {
-    container.innerHTML = "<p>Página não encontrada.</p>";
+    wrapper.innerHTML = "<p>Página não encontrada.</p>";
   }
 }
 
 // ------------------------------
-// SPA hash navigation
+// Gerenciar rotas SPA via hash
 // ------------------------------
 export async function handleRoute(path) {
   if (!path.startsWith("/")) path = `/${path}`;
@@ -53,6 +59,7 @@ export async function handleRoute(path) {
   const mainRoute = routes.find((r) => r.path.test(path));
   const childRoute = childrenRoutes.find((r) => r.path.test(path));
 
+  // Rota principal
   if (mainRoute) {
     await loadLayout(mainRoute.page);
 
@@ -67,19 +74,22 @@ export async function handleRoute(path) {
     return;
   }
 
+  // Rota apenas child
   if (childRoute) {
-    // Se for child, garante que o layout principal Home esteja carregado
-    const layoutRoute = routes.find((r) => r.path.test("/Home")) || routes[0];
+    const layoutRoute =
+      routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[0];
     await loadLayout(layoutRoute.page);
     await loadChild(path);
     return;
   }
 
   content.innerHTML = "<p>Página não encontrada.</p>";
+  document.title = "Erro";
 }
 
 // ------------------------------
-// Intercepta links <a data-link>
+// Intercepta links <a data-link> para SPA
+// ------------------------------
 function navigate(event) {
   const link = event.target.closest("a[data-link]");
   if (!link) return;
@@ -97,12 +107,13 @@ function navigate(event) {
 }
 
 // ------------------------------
-// Inicialização
+// Inicialização SPA
 // ------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("hashchange", () =>
     handleRoute(location.hash.slice(1) || "/")
   );
+
   document.body.addEventListener("click", navigate);
 
   handleRoute(location.hash.slice(1) || "/");

@@ -52,6 +52,10 @@ body {
   transition: opacity 0.2s ease;
 } */
 
+#children-wrapper {
+  min-height: 500px; /* ou a altura aproximada do conteúdo */
+}
+
 .loader {
   border: 3px solid #eee;
   border-top: 3px solid #e63946;

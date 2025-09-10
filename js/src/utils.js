@@ -47,36 +47,45 @@ function executeScripts(root) {
   });
 }
 
-export async function updateChildren(container, html, page, useFade = true) {
+export async function updateChildren(container, html, page) {
   const temp = document.createElement("div");
   temp.innerHTML = html;
   await ensureStyles(temp);
 
   const render = () => {
-    container.innerHTML = temp.innerHTML;
-    executeScripts(container);
+    const newContent = temp.querySelector("#children-content") || temp;
+
+    // Cria wrapper interno se não existir
+    let wrapper = container.querySelector("#children-wrapper");
+    if (!wrapper) {
+      wrapper = document.createElement("div");
+      wrapper.id = "children-wrapper";
+      container.appendChild(wrapper);
+    }
+
+    // Substitui apenas o conteúdo do wrapper
+    wrapper.replaceChildren(...newContent.childNodes);
+
+    // Executa scripts do novo conteúdo
+    executeScripts(wrapper);
+
+    // Executa constantes se existirem
     if (window.loadConstants) {
       try {
-        window.loadConstants(container);
+        window.loadConstants(wrapper);
       } catch (e) {
         console.warn(e);
       }
     }
+
+    // Atualiza título
     const title =
       temp.querySelector("title")?.textContent || page.split("/").pop();
     document.title = title;
+
+    // Dispara evento SPA
     document.dispatchEvent(new Event("spa:pageLoaded"));
   };
 
-  if (useFade) {
-    container.classList.add("fade-out");
-    setTimeout(() => {
-      render();
-      container.classList.remove("fade-out");
-      container.classList.add("fade-in");
-      setTimeout(() => container.classList.remove("fade-in"), 200);
-    }, 100);
-  } else {
-    render();
-  }
+  render();
 }

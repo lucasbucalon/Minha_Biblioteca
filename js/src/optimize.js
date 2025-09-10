@@ -111,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // garantir script essenciais carregados (não duplicar)
   loadJS("./js/src/layouts.js").catch(() => {});
   loadJS("./js/src/models.js").catch(() => {});
+  loadJS("./js/src/utils.js").catch(() => {});
 });
 
 // Lazy load por rota: carrega módulos marcados com data-lazy na página corrente

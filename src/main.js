@@ -3,6 +3,10 @@ import { enableSwipeNavigation } from "../modules/mobile.js";
 import { lazyLoadRoute } from "../modules/optimize.js";
 
 export const animated = {
+  scroll: {
+    enable: true, // true = ativa smooth scroll, false = scroll normal
+    speed: 0.1, // menor = mais suave, maior = mais rápido (0.05 ~ 0.2)
+  },
   fade: {
     enabled: true, // true = ativa, false = desativa
     duration: 250, // duração em ms

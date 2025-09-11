@@ -7,36 +7,45 @@ import { animated } from "../src/main.js";
 // ------------------------------
 // Smooth Scroll (apenas desktop)
 // ------------------------------
-let scrollPos = 0;
-let targetScroll = 0;
-const speed = 0.2;
-const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-if (!isTouchDevice) {
-  window.addEventListener("scroll", () => {
-    targetScroll = window.scrollY;
-  });
-
-  function smoothScroll() {
-    scrollPos += (targetScroll - scrollPos) * speed;
-    document.body.style.transform = `translateY(${-scrollPos}px)`;
-    requestAnimationFrame(smoothScroll);
-  }
-
-  requestAnimationFrame(smoothScroll);
-
-  function updateBodyHeight() {
-    document.body.style.height = document.documentElement.scrollHeight + "px";
-  }
-
-  window.addEventListener("resize", updateBodyHeight);
-  updateBodyHeight();
-}
-
-// Remove delay de 300ms em navegadores mobile antigos
-document.addEventListener("touchstart", () => {}, { passive: true });
+// sheet.js
 
 // ------------------------------
+// Smooth Scroll global (desktop + mobile)
+// ------------------------------
+// const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+// if (!isTouchDevice) {
+let current = 0;
+let target = 0;
+const speed = 0.05; // quanto menor, mais lento
+
+function updateScroll() {
+  current += (target - current) * speed;
+  window.scrollTo(0, current);
+
+  if (Math.abs(target - current) > 0.5) {
+    requestAnimationFrame(updateScroll);
+  }
+}
+
+function onWheel(e) {
+  e.preventDefault();
+  target += e.deltaY;
+  target = Math.max(
+    0,
+    Math.min(target, document.body.scrollHeight - window.innerHeight)
+  );
+  requestAnimationFrame(updateScroll);
+}
+
+window.addEventListener("wheel", onWheel, { passive: false });
+// }
+
+// ------------------------------
+// (restante do sheet.js continua igual, com fade e applyFade)
+// ------------------------------
+
 // Helpers básicos fadeIn / fadeOut
 // ------------------------------
 export function fadeOut(el, duration = 200, translate = "6px") {

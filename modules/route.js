@@ -1,6 +1,7 @@
 // route.js
 import { routes, childrenRoutes, config } from "../src/main.js";
 import { fetchPage, updateChildren } from "./utils.js";
+import { applyFade } from "./sheet.js"; // fade universal
 
 const content = document.getElementById("content");
 
@@ -42,19 +43,12 @@ async function loadChild(path) {
         route.page.endsWith(".html") ? route.page : `${route.page}.html`
       );
 
-      // aplica fade simples no wrapper
-      wrapper.classList.add("fade-out");
-
-      setTimeout(async () => {
+      // fade controlado pelo sheet.js
+      await applyFade(wrapper, async () => {
         await updateChildren(wrapper, html, route.page);
-
-        wrapper.classList.remove("fade-out");
-        wrapper.classList.add("fade-in");
-
-        setTimeout(() => wrapper.classList.remove("fade-in"), 500);
-      }, 200);
+      });
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao carregar child:", err);
       wrapper.innerHTML = "<p>Página não encontrada.</p>";
     }
   } else {
@@ -87,7 +81,7 @@ export async function handleRoute(path) {
     return;
   }
 
-  // Rota apenas child (ex.: quando acessa direto /Home/Algo.html)
+  // Rota apenas child (ex.: quando acessa direto uma URL que é child)
   if (childRoute) {
     const layoutRoute =
       routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];

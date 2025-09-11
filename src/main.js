@@ -2,6 +2,15 @@ import { handleRoute } from "../modules/route.js"; // carregar rotas
 import { enableSwipeNavigation } from "../modules/mobile.js";
 import { lazyLoadRoute } from "../modules/optimize.js";
 
+export const animated = {
+  fade: {
+    enabled: true, // true = ativa, false = desativa
+    duration: 250, // duração em ms
+    useTranslate: true, // true = aplica translateY, false = só opacity
+    translateValue: "1px", // valor do translate (quando ativo)
+  },
+};
+
 export const config = {
   dirs: {
     layouts: "../components/layouts",

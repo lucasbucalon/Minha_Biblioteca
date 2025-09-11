@@ -43,17 +43,6 @@ body {
   padding: 50px 0;
 }
 
-/* Efeito de fade simples */
-.fade-out {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.fade-in {
-  opacity: 1;
-  transition: opacity 0.2s ease;
-}
-
 header {
   text-align: center;
   p {

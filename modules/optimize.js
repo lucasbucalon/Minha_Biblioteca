@@ -1,6 +1,6 @@
 // optimize.js
 
-import { config } from "./main.js";
+import { config } from "../src/main.js";
 
 // otimizações: ignore errors, carregar recursos dinamicamente, lazy by visibility e lazy por rota
 
@@ -109,9 +109,9 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach((el) => observer.observe(el));
 
   // garantir script essenciais carregados (não duplicar)
-  loadJS("./js/src/layouts.js").catch(() => {});
-  loadJS("./js/src/models.js").catch(() => {});
-  loadJS("./js/src/utils.js").catch(() => {});
+  loadJS("./modules/layouts.js").catch(() => {});
+  loadJS("./modules/models.js").catch(() => {});
+  loadJS("./modules/utils.js").catch(() => {});
 });
 
 // Lazy load por rota: carrega módulos marcados com data-lazy na página corrente

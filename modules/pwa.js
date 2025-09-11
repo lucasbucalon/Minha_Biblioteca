@@ -1,5 +1,5 @@
 // pwa.js
-
+import { mobile } from "../src/main.js";
 // Registra o Service Worker
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker
@@ -12,7 +12,7 @@ if ("serviceWorker" in navigator) {
 let deferredPrompt = null;
 
 export function setupInstallButton() {
-  const installBtn = document.getElementById("install-btn");
+  const installBtn = document.getElementById(`${mobile.classInstall}`);
   if (!installBtn) return;
 
   installBtn.style.display = "inline-block"; // sempre visível
@@ -28,9 +28,7 @@ export function setupInstallButton() {
   if (isIos && !isInStandalone) {
     installBtn.textContent = "Adicionar à Tela Inicial";
     installBtn.onclick = () => {
-      alert(
-        "No iPhone/iPad:\n\n1. Toque em 'Compartilhar' (ícone quadrado com seta).\n2. Escolha 'Adicionar à Tela de Início'."
-      );
+      alert(mobile.alertIphone);
     };
     return;
   }
@@ -58,14 +56,7 @@ export function setupInstallButton() {
   // ------------------------------
   installBtn.addEventListener("click", async () => {
     if (!deferredPrompt) {
-      alert(
-        "Seu Dispositivo desktop não suporta instalação deste App.\n" +
-          "Para instalar, siga as instruções:\n\n" +
-          "1. Abra o navegador no site.\n" +
-          "2. Abra o menu do navegador (três pontos).\n" +
-          "3. Procure 'Instalar' ou 'Adicionar à Tela de Início'.\n" +
-          "4. Siga as instruções."
-      );
+      alert(mobile.alertDesktop);
       return;
     }
 

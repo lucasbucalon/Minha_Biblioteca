@@ -1,5 +1,5 @@
 // route.js
-import { routes, childrenRoutes, config } from "./main.js";
+import { routes, childrenRoutes, config } from "../src/main.js";
 import { fetchPage, updateChildren } from "./utils.js";
 
 const content = document.getElementById("content");
@@ -77,7 +77,7 @@ export async function handleRoute(path) {
   // Rota apenas child
   if (childRoute) {
     const layoutRoute =
-      routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[0];
+      routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
     await loadLayout(layoutRoute.page);
     await loadChild(path);
     return;

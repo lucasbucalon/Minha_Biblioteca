@@ -1,5 +1,5 @@
 // components.js
-import { config } from "./main.js";
+import { config } from "../src/main.js";
 // Carrega componentes HTML via <div data-component="Card" data-props='{}'></div>
 const loadedStyles = new Set();
 const loadedScripts = new Set();

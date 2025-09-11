@@ -5,9 +5,10 @@ import { fetchPage, updateChildren } from "./utils.js";
 const content = document.getElementById("content");
 
 // ------------------------------
-// Carregar layout principal (somente uma vez)
+// Cache de layouts já carregados
 // ------------------------------
 const loadedLayouts = new Set();
+
 async function loadLayout(page) {
   try {
     if (!loadedLayouts.has(page)) {
@@ -25,7 +26,7 @@ async function loadLayout(page) {
 }
 
 // ------------------------------
-// Carregar child dentro de #children-wrapper
+// Carregar child dentro de #children-wrapper (com fade)
 // ------------------------------
 async function loadChild(path) {
   if (!path.startsWith("/")) path = `/${path}`;
@@ -40,7 +41,18 @@ async function loadChild(path) {
       const html = await fetchPage(
         route.page.endsWith(".html") ? route.page : `${route.page}.html`
       );
-      await updateChildren(wrapper, html, route.page);
+
+      // aplica fade simples no wrapper
+      wrapper.classList.add("fade-out");
+
+      setTimeout(async () => {
+        await updateChildren(wrapper, html, route.page);
+
+        wrapper.classList.remove("fade-out");
+        wrapper.classList.add("fade-in");
+
+        setTimeout(() => wrapper.classList.remove("fade-in"), 500);
+      }, 200);
     } catch (err) {
       console.error(err);
       wrapper.innerHTML = "<p>Página não encontrada.</p>";
@@ -69,20 +81,23 @@ export async function handleRoute(path) {
         hash && childrenRoutes.some((r) => r.path.test(hash))
           ? hash
           : config.defaultChild;
+
       await loadChild(childPath);
     }
     return;
   }
 
-  // Rota apenas child
+  // Rota apenas child (ex.: quando acessa direto /Home/Algo.html)
   if (childRoute) {
     const layoutRoute =
       routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
+
     await loadLayout(layoutRoute.page);
     await loadChild(path);
     return;
   }
 
+  // fallback
   content.innerHTML = "<p>Página não encontrada.</p>";
   document.title = "Erro";
 }
@@ -116,5 +131,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.body.addEventListener("click", navigate);
 
+  // inicializa rota atual ou default
   handleRoute(location.hash.slice(1) || "/");
 });

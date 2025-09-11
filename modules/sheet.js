@@ -30,9 +30,3 @@ if (!isTouchDevice) {
 
 // Remove delay 300ms em alguns navegadores mobile
 document.addEventListener("touchstart", () => {}, { passive: true });
-
-// Loader visual para fetch de páginas
-function showLoader() {
-  const content = document.getElementById("content");
-  content.innerHTML = "<div class='loader'></div>";
-}

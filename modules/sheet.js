@@ -1,103 +1,60 @@
-// sheet.js
-// Smooth scroll (desktop), fade helpers e applyFade configurável
-// Coloque este arquivo em /js/src/sheet.js e importe applyFade onde precisar.
+// sheet.js — Fade Helpers + Smooth Scroll
+// Não importa main.js; main.js chamará configureSheet()
 
-import { animated } from "../src/main.js";
+// Configuração interna padrão (será sobrescrita via configureSheet)
+let cfgInterno = {
+  scroll: {
+    enabled: false,
+    mode: "original",
+    custom: { ease: 0.2, stepMin: 0.8, stepMax: 80 },
+  },
+  fade: {
+    enabled: true,
+    duration: 250,
+    useTranslate: true,
+    translateValue: "1px",
+  },
+};
 
-// ------------------------------
-// Smooth Scroll (apenas desktop)
-// ------------------------------
-
-// sheet.js
-
-// ------------------------------
-// Smooth Scroll global (desktop + mobile)
-// ------------------------------
-// const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-
-// if (!isTouchDevice) {
-let current = 0;
-let target = 0;
-const speed = 0.05; // quanto menor, mais lento
-
-function updateScroll() {
-  current += (target - current) * speed;
-  window.scrollTo(0, current);
-
-  if (Math.abs(target - current) > 0.5) {
-    requestAnimationFrame(updateScroll);
-  }
-}
-
-function onWheel(e) {
-  e.preventDefault();
-  target += e.deltaY;
-  target = Math.max(
-    0,
-    Math.min(target, document.body.scrollHeight - window.innerHeight)
-  );
-  requestAnimationFrame(updateScroll);
-}
-
-window.addEventListener("wheel", onWheel, { passive: false });
-// }
-
-// ------------------------------
-// (restante do sheet.js continua igual, com fade e applyFade)
-// ------------------------------
-
-// Helpers básicos fadeIn / fadeOut
-// ------------------------------
+// ---------------- Fade Helpers ----------------
 export function fadeOut(el, duration = 200, translate = "6px") {
   return new Promise((resolve) => {
     if (!el) return resolve();
-
     el.style.transition = `opacity ${duration}ms ease, transform ${duration}ms ease`;
     el.style.willChange = "opacity, transform";
-
-    void el.offsetWidth; // força reflow
-
+    void el.offsetWidth;
     el.style.opacity = "0";
     if (translate) el.style.transform = `translateY(${translate})`;
-
-    setTimeout(() => resolve(), duration + 10);
+    setTimeout(resolve, duration + 10);
   });
 }
 
 export function fadeIn(el, duration = 200) {
   return new Promise((resolve) => {
     if (!el) return resolve();
-
     el.style.transition = `opacity ${duration}ms ease, transform ${duration}ms ease`;
     el.style.willChange = "opacity, transform";
-
     void el.offsetWidth;
-
     el.style.opacity = "1";
     el.style.transform = "translateY(0)";
-
-    setTimeout(() => resolve(), duration + 10);
+    setTimeout(resolve, duration + 10);
   });
 }
 
-// ------------------------------
-// Espera pelo fim da transição
-// ------------------------------
+// ---------------- Espera Transição ----------------
 function onceTransitionEnd(el, timeoutMs = 250) {
   return new Promise((resolve) => {
     if (!el) return resolve();
-
     let resolved = false;
     const timer = setTimeout(() => {
-      if (resolved) return;
+      if (!resolved) return;
       resolved = true;
       cleanup();
       resolve();
     }, timeoutMs + 50);
 
     function handler(e) {
-      if (e.target !== el) return;
-      if (resolved) return;
+      if (e.target !== el || resolved) return;
       resolved = true;
       cleanup();
       resolve();
@@ -112,65 +69,36 @@ function onceTransitionEnd(el, timeoutMs = 250) {
   });
 }
 
-// ------------------------------
-// applyFade configurável (via main.js)
-// ------------------------------
+// ---------------- applyFade ----------------
 const fadeMap = new WeakMap();
-
-/**
- * Aplica fade no elemento de acordo com as configs do main.js
- *
- * @param {HTMLElement} el - elemento alvo
- * @param {Function} render - função async que atualiza o conteúdo
- * @param {number} durationOverride - sobrescreve a duração
- */
 export async function applyFade(el, render, durationOverride) {
-  const fadeCfg = animated?.fade || {
-    enabled: false,
-    duration: 200,
-    useTranslate: true,
-    translateValue: "6px",
-  };
-
-  // se fade estiver desativado
+  const fadeCfg = cfgInterno.fade || { enabled: false };
   if (!fadeCfg.enabled) return render();
-
   if (!el) return render();
 
   const duration = durationOverride ?? fadeCfg.duration;
   const translate = fadeCfg.useTranslate ? fadeCfg.translateValue : null;
 
   const ongoing = fadeMap.get(el);
-  if (ongoing) {
-    try {
-      await ongoing;
-    } catch {}
-  }
+  if (ongoing) await ongoing.catch(() => {});
 
   const op = (async () => {
     const prevTransition = el.style.transition;
-
     el.style.transition = `opacity ${duration}ms ease, transform ${duration}ms ease`;
     el.style.willChange = "opacity, transform";
 
-    if (!el.style.opacity) {
-      const comp = getComputedStyle(el).opacity;
-      el.style.opacity = comp || "1";
-    }
+    if (!el.style.opacity)
+      el.style.opacity = getComputedStyle(el).opacity || "1";
 
     void el.offsetWidth;
 
-    // Fade out
     el.style.opacity = "0";
     if (translate) el.style.transform = `translateY(${translate})`;
 
     await onceTransitionEnd(el, duration);
-
     await render();
-
     void el.offsetWidth;
 
-    // Fade in
     el.style.opacity = "1";
     if (translate) el.style.transform = "translateY(0)";
 
@@ -187,33 +115,104 @@ export async function applyFade(el, render, durationOverride) {
   }
 }
 
-// ------------------------------
-// Exemplos utilitários
-// ------------------------------
-const content =
-  typeof document !== "undefined" && document.getElementById("content");
-const children =
-  typeof document !== "undefined" &&
-  document.getElementById("children-wrapper");
+// ---------------- Smooth Scroll ----------------
+let smoothState = { initialized: false, cleanup: null };
 
-export async function changeContent(newHtml, duration) {
-  if (!content) return;
-  await applyFade(
-    content,
-    async () => {
-      content.innerHTML = newHtml;
-    },
-    duration
-  );
+function mergeDefaults(target, src) {
+  for (const k in src) {
+    if (src[k] && typeof src[k] === "object" && !Array.isArray(src[k])) {
+      target[k] = target[k] || {};
+      mergeDefaults(target[k], src[k]);
+    } else if (target[k] === undefined) target[k] = src[k];
+  }
+  return target;
 }
 
-export async function changeChild(newHtml, duration) {
-  if (!children) return;
-  await applyFade(
-    children,
-    async () => {
-      children.innerHTML = newHtml;
-    },
-    duration
-  );
+function initSmoothScroll(scrollCfg) {
+  if (smoothState.initialized || !scrollCfg?.enabled) return;
+
+  const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  if (isTouch && scrollCfg.mode !== "custom") return;
+
+  const presets = {
+    original: { ease: 1, stepMin: 0.5, stepMax: Infinity },
+    smooth: { ease: 0.2, stepMin: 0.8, stepMax: 80 },
+    heavy: { ease: 0.07, stepMin: 0.6, stepMax: 40 },
+  };
+
+  const cfgScroll =
+    scrollCfg.mode === "custom"
+      ? scrollCfg.custom || scrollCfg
+      : presets[scrollCfg.mode] || presets.smooth;
+
+  let target = window.scrollY;
+  let current = target;
+  let running = false;
+
+  function clamp(v, a, b) {
+    return Math.max(a, Math.min(b, v));
+  }
+
+  function animate() {
+    const diff = target - current;
+    if (Math.abs(diff) > 0.5) {
+      let step = diff * cfgScroll.ease;
+      step = clamp(step, -cfgScroll.stepMax, cfgScroll.stepMax);
+      if (Math.abs(step) < cfgScroll.stepMin)
+        step = step > 0 ? cfgScroll.stepMin : -cfgScroll.stepMin;
+      current += step;
+      window.scrollTo(0, current);
+      requestAnimationFrame(animate);
+    } else {
+      current = target;
+      window.scrollTo(0, current);
+      running = false;
+    }
+  }
+
+  function goTo(newTarget) {
+    target = clamp(
+      newTarget,
+      0,
+      document.documentElement.scrollHeight - window.innerHeight
+    );
+    if (!running) {
+      running = true;
+      requestAnimationFrame(animate);
+    }
+  }
+
+  function onWheel(e) {
+    const tag = e.target?.tagName;
+    if (
+      e.ctrlKey ||
+      ["INPUT", "TEXTAREA", "SELECT"].includes(tag) ||
+      e.target.isContentEditable
+    )
+      return;
+    e.preventDefault();
+    goTo(target + e.deltaY);
+  }
+
+  window.addEventListener("wheel", onWheel, { passive: false });
+
+  smoothState.initialized = true;
+  smoothState.cleanup = () => {
+    window.removeEventListener("wheel", onWheel);
+    smoothState.initialized = false;
+    smoothState.cleanup = null;
+  };
+
+  console.log("Smooth scroll initialized:", cfgScroll);
+}
+
+// ---------------- configureSheet ----------------
+export function configureSheet(configFromMain) {
+  cfgInterno = { ...cfgInterno, ...configFromMain };
+  initSmoothScroll(cfgInterno.scroll); // inicializa scroll com as configs passadas
+}
+
+// ---------------- cleanup opcional ----------------
+export function cleanupSmooth() {
+  if (smoothState.cleanup) smoothState.cleanup();
 }

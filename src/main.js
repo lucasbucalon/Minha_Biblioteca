@@ -1,20 +1,28 @@
-import { handleRoute } from "../modules/route.js"; // carregar rotas
+import { handleRoute } from "../modules/route.js";
 import { enableSwipeNavigation } from "../modules/mobile.js";
 import { lazyLoadRoute } from "../modules/optimize.js";
+import { configureSheet } from "../modules/sheet.js"; // sheet.js atualizado
 
+// ---------- Configurações de animação ----------
 export const animated = {
   scroll: {
-    enable: true, // true = ativa smooth scroll, false = scroll normal
-    speed: 0.1, // menor = mais suave, maior = mais rápido (0.05 ~ 0.2)
+    enabled: true, // ativa smooth scroll
+    mode: "smooth", // "original" | "smooth" | "heavy" | "custom"
+    custom: {
+      ease: 0.4, // 0.05 = pesado, 0.4 = leve
+      stepMin: 1, // velocidade mínima px/frame
+      stepMax: 60, // velocidade máxima px/frame
+    },
   },
   fade: {
-    enabled: true, // true = ativa, false = desativa
+    enabled: true, // ativa fade
     duration: 250, // duração em ms
-    useTranslate: true, // true = aplica translateY, false = só opacity
-    translateValue: "1px", // valor do translate (quando ativo)
+    useTranslate: false, // aplica translateY junto
+    translateValue: "1px", // valor do translate
   },
 };
 
+// ---------- Configurações gerais ----------
 export const config = {
   dirs: {
     layouts: "../components/layouts",
@@ -35,6 +43,7 @@ export const config = {
   dirsChild: "../app/Home/home",
 };
 
+// ---------- Rotas ----------
 export const routes = [
   { path: /^\/$/, page: "../site/site" },
   { path: /^\/Home$/, page: config.dirsChild },
@@ -49,6 +58,7 @@ export const childrenRoutes = [
   { path: /^\/Contato$/, page: "../app/routes/Contact/contact" },
 ];
 
+// ---------- Configurações mobile ----------
 export const mobile = {
   classInstall: "install-btn",
   alertIphone:
@@ -63,10 +73,15 @@ export const mobile = {
     "3. Procure 'Instalar' ou 'Adicionar à Tela de Início'.\n" +
     "4. Siga as instruções.",
 };
-
+// ---------- Inicialização ----------
 document.addEventListener("DOMContentLoaded", () => {
+  // Inicializa sheet.js com configs (scroll + fade)
+  configureSheet(animated);
+
+  // Inicializa rotas SPA
   handleRoute(location.hash.slice(1) || "/");
 
+  // Swipe navigation mobile
   enableSwipeNavigation({
     enabled: false,
     left: "/Botoes",
@@ -76,7 +91,10 @@ document.addEventListener("DOMContentLoaded", () => {
     threshold: 40,
   });
 
+  // Lazy load das rotas
   document.addEventListener("spa:pageLoaded", () => {
     lazyLoadRoute(location.hash);
   });
+
+  console.log("Main.js initialized: animated config", animated);
 });

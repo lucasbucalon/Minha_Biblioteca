@@ -16,7 +16,7 @@ html {
   font-size: 62.5%;
   font-family: consolas, monospace;
   color-scheme: light dark;
-  /* scroll-behavior: smooth !important ; */
+  scroll-behavior: smooth;
 }
 
 body {

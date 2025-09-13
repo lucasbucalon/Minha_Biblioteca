@@ -1,4 +1,22 @@
-acrescentei a logica da sub rota porem esta com alguns defeitos, como que as rotas dentro do children ficam piscando quando é chamado pela primeira vez.
-a logica era para ser, o id=content era para der a rota principal e o chilgren uma outra rota opcional, e so renderizar o que esta dentro dela.
+ <!-- Meta Tags SEO, Open Graph e Twitter Cards (serão preenchidas pelo script) -->
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <meta name="author" content="" />
 
-reescreva todos os documentos js por completos, otimizando-os, para melhor performance e uns conpativeis com o outro, o tudo controlado pelo main.js e evite esses piscar de elementos.
+    <meta property="og:title" content="" />
+    <meta property="og:description" content="" />
+    <meta property="og:type" content="" />
+    <meta property="og:url" content="" />
+    <meta property="og:image" content="" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="" />
+    <meta name="twitter:description" content="" />
+    <meta name="twitter:image" content="" />
+
+    <link rel="canonical" href="" />
+
+   
+
+    <!-- CSS Global -->
+    <link rel="stylesheet" href="" />

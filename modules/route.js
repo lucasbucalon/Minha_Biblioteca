@@ -1,9 +1,9 @@
 // route.js
 import { routes, childrenRoutes, config } from "../src/main.js";
-import { fetchPage, updateChildren } from "./utils.js";
+import { fetchPage, updateChildren } from "./children.js";
 import { applyFade } from "./sheet.js"; // fade universal
 
-const content = document.getElementById("content");
+const content = document.getElementById("route");
 
 // ------------------------------
 // Cache de layouts já carregados

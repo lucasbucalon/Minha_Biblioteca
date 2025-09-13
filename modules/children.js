@@ -117,11 +117,6 @@ export async function updateChildren(container, html, page) {
     }
   }
 
-  // Atualiza título da página
-  const title =
-    temp.querySelector("title")?.textContent || page.split("/").pop();
-  document.title = title;
-
   // Dispara evento SPA
   document.dispatchEvent(new Event("spa:pageLoaded"));
 }

@@ -2,19 +2,23 @@
   "name": "Minha Biblioteca",
   "short_name": "Biblioteca",
   "description": "Meu app incrível de SPA com offline, swipe e lazy load.",
-  "categories": [
-    "productivity",
-    "education"
-  ],
+  "author": "Lucas",
+  "keywords": "programação, SPA, SEO, marketing, web design",
+  "authenticator": "XYZ123TOKEN",
+  "url": "https://meusite.com/",
+  "type": "website",
   "lang": "pt-br",
+  "image": "./constant/image/Frame.png",
+  "theme_color": "#1e1e1e",
+  "background_color": "#1e1e1e",
+  "favicon": "./constant/svg/icon.svg",
+  "global_css": "../src/global.css",
   "start_url": "./index.html",
   "display": "standalone",
   "display_override": [
     "standalone",
     "fullscreen"
   ],
-  "background_color": "#1e1e1e",
-  "theme_color": "#1e1e1e",
   "orientation": "portrait",
   "icons": [
     {
@@ -24,6 +28,17 @@
       "purpose": "maskable"
     }
   ],
+  "structured_data": {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Minha Biblioteca",
+    "url": "https://meusite.com/",
+    "author": "Lucas"
+  },
+  "social": {
+    "tag_name": "@bibliotecaspa",
+    "hashtag_post": "#minhabiblioteca"
+  },
   "related_applications": [
     {
       "platform": "play",

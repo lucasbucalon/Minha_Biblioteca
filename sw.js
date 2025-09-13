@@ -4,7 +4,6 @@ const CACHE_NAME = "spa-cache-v4";
 const URLS_TO_CACHE = [
   "./",
   "./index.html",
-  "./pages/off/offline.html",
   "./css/global.css",
   "./js/route.js",
   "./js/main.js",

@@ -28,8 +28,10 @@ export const config = {
     layouts: "../components/layouts",
     models: "../components/models",
   },
-  dirsGateway: {
+  Gateway: {
     error404: "./app/pages/error/404",
+    error500: "./app/pages/error/500",
+    errorOffline: "./app/pages/error/offline",
   },
   useChildren: true,
   persistentChild: null,

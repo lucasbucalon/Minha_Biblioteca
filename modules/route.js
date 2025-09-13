@@ -6,58 +6,80 @@ import { applyFade } from "./sheet.js"; // fade universal
 const content = document.getElementById("route");
 
 // ------------------------------
-// Cache de layouts já carregados
+// Função genérica para carregar páginas de erro
 // ------------------------------
-const loadedLayouts = new Set();
+async function loadError(type) {
+  const key = `error${type}`;
+  const path = config.Gateway?.[key];
 
-async function loadLayout(page) {
+  if (!path) {
+    console.error(`config.Gateway.${key} não configurado`);
+    content.innerHTML = `<h1>${type} - Erro</h1>`;
+    document.title = `${type} - Erro`;
+    return;
+  }
+
   try {
-    if (!loadedLayouts.has(page)) {
-      const html = await fetchPage(
-        page.endsWith(".html") ? page : `${page}.html`
-      );
-      content.innerHTML = html;
-      loadedLayouts.add(page);
-    }
+    const html = await fetchPage(
+      path.endsWith(".html") ? path : `${path}.html`
+    );
+    content.innerHTML = html;
+    document.title = `${type} - Erro`;
   } catch (err) {
-    console.error(err);
-    content.innerHTML = "<p>Página não encontrada.</p>";
-    document.title = "Erro";
+    console.error(`Não foi possível carregar a página ${type}`, err);
+    content.innerHTML = `<h1>${type} - Erro</h1>`;
+    document.title = `${type} - Erro`;
   }
 }
 
 // ------------------------------
-// Carregar child dentro de #children-wrapper (com fade)
+// Função para carregar Children dentro de #children-wrapper com fade
 // ------------------------------
 async function loadChild(path) {
   if (!path.startsWith("/")) path = `/${path}`;
 
   const route = childrenRoutes.find((r) => r.path.test(path));
   const wrapper = document.querySelector("#children-wrapper");
-
   if (!wrapper) return;
 
-  if (route) {
-    try {
-      const html = await fetchPage(
-        route.page.endsWith(".html") ? route.page : `${route.page}.html`
-      );
+  if (!route) {
+    await loadError("404");
+    return;
+  }
 
-      // fade controlado pelo sheet.js
-      await applyFade(wrapper, async () => {
-        await updateChildren(wrapper, html, route.page);
-      });
-    } catch (err) {
-      console.error("Erro ao carregar child:", err);
-      wrapper.innerHTML = "<p>Página não encontrada.</p>";
-    }
-  } else {
-    wrapper.innerHTML = "<p>Página não encontrada.</p>";
+  try {
+    const html = await fetchPage(
+      route.page.endsWith(".html") ? route.page : `${route.page}.html`
+    );
+    await applyFade(wrapper, async () => {
+      await updateChildren(wrapper, html, route.page);
+    });
+  } catch (err) {
+    await loadError("500");
   }
 }
 
 // ------------------------------
-// Gerenciar rotas SPA via hash
+// Função para carregar Layout principal
+// ------------------------------
+const loadedLayouts = new Set();
+
+async function loadLayout(page) {
+  if (loadedLayouts.has(page)) return;
+
+  try {
+    const html = await fetchPage(
+      page.endsWith(".html") ? page : `${page}.html`
+    );
+    content.innerHTML = html;
+    loadedLayouts.add(page);
+  } catch (err) {
+    await loadError("500");
+  }
+}
+
+// ------------------------------
+// Gerenciar rotas SPA
 // ------------------------------
 export async function handleRoute(path) {
   if (!path.startsWith("/")) path = `/${path}`;
@@ -75,25 +97,22 @@ export async function handleRoute(path) {
         hash && childrenRoutes.some((r) => r.path.test(hash))
           ? hash
           : config.defaultChild;
-
       await loadChild(childPath);
     }
     return;
   }
 
-  // Rota apenas child (ex.: quando acessa direto uma URL que é child)
+  // Rota apenas child
   if (childRoute) {
     const layoutRoute =
       routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
-
     await loadLayout(layoutRoute.page);
     await loadChild(path);
     return;
   }
 
-  // fallback
-  content.innerHTML = "<p>Página não encontrada.</p>";
-  document.title = "Erro";
+  // fallback 404
+  await loadError("404");
 }
 
 // ------------------------------
@@ -102,8 +121,8 @@ export async function handleRoute(path) {
 function navigate(event) {
   const link = event.target.closest("a[data-link]");
   if (!link) return;
-  event.preventDefault();
 
+  event.preventDefault();
   let href = link.getAttribute("href") || "/";
   if (!href.startsWith("#")) href = `#${href}`;
   const path = href.slice(1);
@@ -122,7 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("hashchange", () =>
     handleRoute(location.hash.slice(1) || "/")
   );
-
   document.body.addEventListener("click", navigate);
 
   // inicializa rota atual ou default

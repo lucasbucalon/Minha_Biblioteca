@@ -1,8 +1,10 @@
 // sw.js
-const AUTO_UPDATE = true;
+import { config } from "./src/main.js";
+
+const AUTO_UPDATE = true; // 🔴 true ativa atualização automática
 const CACHE_NAME = "spa-cache-v6";
 
-// 🔴 inclui os erros e offline direto no cache inicial
+// Arquivos essenciais para cache
 const URLS_TO_CACHE = [
   "./",
   "./index.html",
@@ -17,15 +19,20 @@ const URLS_TO_CACHE = [
   "./js/localstorage.js",
   "./app/pages/error/404.html",
   "./app/pages/error/500.html",
+  "./app/pages/error/offline.html",
 ];
 
 // ------------------------------
 // Instalação
 // ------------------------------
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(URLS_TO_CACHE))
-  );
+  if (!AUTO_UPDATE) {
+    event.waitUntil(
+      caches.open(CACHE_NAME).then((cache) => {
+        return cache.addAll(URLS_TO_CACHE);
+      })
+    );
+  }
   self.skipWaiting();
 });
 
@@ -33,38 +40,61 @@ self.addEventListener("install", (event) => {
 // Ativação
 // ------------------------------
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(keys.map((key) => key !== CACHE_NAME && caches.delete(key)))
-      )
-  );
+  if (AUTO_UPDATE) {
+    // limpa todos os caches antigos
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+    );
+  } else {
+    // remove apenas caches antigos que não correspondem ao atual
+    event.waitUntil(
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(
+            keys.map((key) => key !== CACHE_NAME && caches.delete(key))
+          )
+        )
+    );
+  }
   self.clients.claim();
 });
 
 // ------------------------------
-// Estratégia fetch com fallback
+// Estratégia fetch
 // ------------------------------
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    fetch(event.request)
-      .then((resp) => {
-        // ok, volta resposta da rede
-        if (resp && resp.status === 404) {
-          return caches.match("./app/pages/error/404.html");
+    (async () => {
+      try {
+        // 🔄 Auto-update: sempre tenta rede primeiro
+        const networkResponse = await fetch(event.request);
+        if (!AUTO_UPDATE) {
+          // atualiza cache para cache-first se não estiver em auto-update
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(event.request, networkResponse.clone());
         }
-        return resp;
-      })
-      .catch(async () => {
-        const cache = await caches.open(CACHE_NAME);
+        return networkResponse;
+      } catch (err) {
+        // rede falhou → tenta cache
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) return cachedResponse;
 
-        // tenta o cache normal
-        const cachedResp = await cache.match(event.request);
-        if (cachedResp) return cachedResp;
+        // fallback offline
+        if (event.request.mode === "navigate") {
+          // se for navegação (rota do SPA), retorna página offline
+          const offlinePage = await caches.match(
+            `${config.gateway.errorOffline}.html`
+          );
+          return offlinePage || new Response("Offline", { status: 503 });
+        }
 
-        // fallback final → offline (500)
-        return cache.match("./app/pages/error/500.html");
-      })
+        // fallback geral: retorna resposta 500
+        const errorPage = await caches.match(`${config.gateway.error500}.html`);
+        return errorPage || new Response("Erro interno", { status: 500 });
+      }
+    })()
   );
 });

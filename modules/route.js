@@ -10,10 +10,10 @@ const content = document.getElementById("route");
 // ------------------------------
 async function loadError(type) {
   const key = `error${type}`;
-  const path = config.Gateway?.[key];
+  const path = config.gateway?.[key];
 
   if (!path) {
-    console.error(`config.Gateway.${key} não configurado`);
+    console.error(`config.gateway.${key} não configurado`);
     content.innerHTML = `<h1>${type} - Erro</h1>`;
     document.title = `${type} - Erro`;
     return;

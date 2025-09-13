@@ -1,22 +1,47 @@
- <!-- Meta Tags SEO, Open Graph e Twitter Cards (serão preenchidas pelo script) -->
-    <meta name="description" content="" />
-    <meta name="keywords" content="" />
-    <meta name="author" content="" />
+1️⃣ Controle de Acesso
 
-    <meta property="og:title" content="" />
-    <meta property="og:description" content="" />
-    <meta property="og:type" content="" />
-    <meta property="og:url" content="" />
-    <meta property="og:image" content="" />
+Autenticação/Login → bloqueia usuários não logados.
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="" />
-    <meta name="twitter:description" content="" />
-    <meta name="twitter:image" content="" />
+Permissões/Roles → exibe conteúdo apenas para quem tem autorização.
 
-    <link rel="canonical" href="" />
+Validação de estado do usuário → ex.: perfil completo antes de acessar a rota.
 
-   
+2️⃣ Interceptação de Rota
 
-    <!-- CSS Global -->
-    <link rel="stylesheet" href="" />
+Redirecionamento condicional → manda o usuário para outra rota se alguma condição não for atendida.
+
+Pré-carregamento de dados → executa fetch ou validações antes do Children renderizar.
+
+Bloqueio temporário → rota bloqueada até uma condição ser satisfeita.
+
+3️⃣ Páginas Funcionais / UI Especial
+
+Loading / Spinner → exibe enquanto dados ou Children estão carregando.
+
+Offline → mostra quando não há conexão e a rota precisa de rede.
+
+Error / 404 → rota não encontrada ou erro na renderização.
+
+Manutenção / Coming Soon → exibe quando funcionalidade ainda não está disponível.
+
+4️⃣ Monitoramento e Logging
+
+Analytics → registrar visitas ou interações antes da rota renderizar.
+
+Debug / Dev Mode → mostrar mensagens ou logs para desenvolvedores.
+
+5️⃣ Custom Middleware
+
+Validação de formulários ou fluxos complexos → ex.: checkout, passo a passo.
+
+Execução de animações ou transições → antes do Children aparecer.
+
+Feature flags → habilita ou desabilita funcionalidades dinamicamente.
+
+6️⃣ Integração com PWA e Offline
+
+Cache check → garante que os assets necessários estão carregados.
+
+Service worker hooks → ex.: exibir offline se cache não estiver pronto.
+
+Atualização de conteúdo → gateway pode forçar atualização do SW antes de renderizar.

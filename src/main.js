@@ -28,14 +28,8 @@ export const config = {
     layouts: "../components/layouts",
     models: "../components/models",
   },
-  pages: {
-    error404: "../pages/gateway/404",
-    fallback: "../pages/gateway/offline",
-    loading: "../pages/gateway/loading",
-    login: "../pages/gateway/login",
-    signup: "../pages/gateway/signup",
-    terms: "../pages/gateway/terms",
-    policy: "../pages/gateway/policy",
+  dirsGateway: {
+    error404: "./app/pages/error/404",
   },
   useChildren: true,
   persistentChild: null,

@@ -1,8 +1,8 @@
 // sw.js
 import { config } from "./src/main.js";
 
-const AUTO_UPDATE = true; // 🔴 true ativa atualização automática
-const CACHE_NAME = "spa-cache-v5";
+const AUTO_UPDATE = false; // 🔴 true ativa atualização automática
+const CACHE_NAME = "spa-cache-v6";
 
 // Arquivos essenciais para cache
 const URLS_TO_CACHE = [

@@ -32,6 +32,7 @@ export const config = {
     error404: "./app/pages/error/404",
     error500: "./app/pages/error/500",
     errorOffline: "./app/pages/error/offline",
+    pageLoad: "./app/pages/loads/pageLoad",
   },
   useChildren: true,
   persistentChild: null,

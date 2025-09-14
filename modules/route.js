@@ -1,49 +1,28 @@
 // route.js
 import { routes, childrenRoutes, config } from "../src/main.js";
 import { fetchPage, updateChildren } from "./children.js";
-import { applyFade } from "./sheet.js"; // fade universal
+import { applyFade } from "./sheet.js";
+import {
+  showPageLoad,
+  hidePageLoad,
+  show404,
+  show500,
+  showOffline,
+} from "./gateways.js";
 
 const content = document.getElementById("route");
 
 // ------------------------------
-// Função genérica para carregar páginas de erro
-// ------------------------------
-async function loadError(type) {
-  const key = `error${type}`;
-  const path = config.gateway?.[key];
-
-  if (!path) {
-    console.error(`config.gateway.${key} não configurado`);
-    content.innerHTML = `<h1>${type} - Erro</h1>`;
-    document.title = `${type} - Erro`;
-    return;
-  }
-
-  try {
-    const html = await fetchPage(
-      path.endsWith(".html") ? path : `${path}.html`
-    );
-    content.innerHTML = html;
-    document.title = `${type} - Erro`;
-  } catch (err) {
-    console.error(`Não foi possível carregar a página ${type}`, err);
-    content.innerHTML = `<h1>${type} - Erro</h1>`;
-    document.title = `${type} - Erro`;
-  }
-}
-
-// ------------------------------
-// Função para carregar Children dentro de #children-wrapper com fade
+// Carrega Children dentro de #children-wrapper
 // ------------------------------
 async function loadChild(path) {
   if (!path.startsWith("/")) path = `/${path}`;
-
   const route = childrenRoutes.find((r) => r.path.test(path));
   const wrapper = document.querySelector("#children-wrapper");
   if (!wrapper) return;
 
   if (!route) {
-    await loadError("404");
+    await show404();
     return;
   }
 
@@ -55,12 +34,16 @@ async function loadChild(path) {
       await updateChildren(wrapper, html, route.page);
     });
   } catch (err) {
-    await loadError("500");
+    if (!navigator.onLine) {
+      await showOffline();
+    } else {
+      await show500();
+    }
   }
 }
 
 // ------------------------------
-// Função para carregar Layout principal
+// Carrega Layout principal
 // ------------------------------
 const loadedLayouts = new Set();
 
@@ -74,12 +57,12 @@ async function loadLayout(page) {
     content.innerHTML = html;
     loadedLayouts.add(page);
   } catch (err) {
-    await loadError("500");
+    await show500();
   }
 }
 
 // ------------------------------
-// Gerenciar rotas SPA
+// Gerenciar rotas SPA com pageLoad
 // ------------------------------
 export async function handleRoute(path) {
   if (!path.startsWith("/")) path = `/${path}`;
@@ -87,36 +70,55 @@ export async function handleRoute(path) {
   const mainRoute = routes.find((r) => r.path.test(path));
   const childRoute = childrenRoutes.find((r) => r.path.test(path));
 
-  // Rota principal
-  if (mainRoute) {
-    await loadLayout(mainRoute.page);
+  const minLoadTime = config.gateway.loadTime;
+  const startTime = Date.now();
 
-    if (config.useChildren) {
-      const hash = location.hash.slice(1);
-      const childPath =
-        hash && childrenRoutes.some((r) => r.path.test(hash))
-          ? hash
-          : config.defaultChild;
-      await loadChild(childPath);
+  try {
+    if (mainRoute) {
+      await showPageLoad(); // loader só para rota principal
+      await loadLayout(mainRoute.page);
+
+      if (config.useChildren) {
+        const hash = location.hash.slice(1);
+        const childPath =
+          hash && childrenRoutes.some((r) => r.path.test(hash))
+            ? hash
+            : config.defaultChild;
+        await loadChild(childPath); // troca de children sem loader
+      }
+
+      // garante tempo mínimo do loader
+      const elapsed = Date.now() - startTime;
+      if (elapsed < minLoadTime) {
+        await new Promise((res) => setTimeout(res, minLoadTime - elapsed));
+      }
+
+      hidePageLoad();
+      return;
     }
-    return;
-  }
 
-  // Rota apenas child
-  if (childRoute) {
-    const layoutRoute =
-      routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
-    await loadLayout(layoutRoute.page);
-    await loadChild(path);
-    return;
-  }
+    if (childRoute) {
+      const layoutRoute =
+        routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
+      await loadLayout(layoutRoute.page);
+      await loadChild(path); // children sem loader
+      return;
+    }
 
-  // fallback 404
-  await loadError("404");
+    await show404();
+    const elapsed = Date.now() - startTime;
+    if (elapsed < minLoadTime) {
+      await new Promise((res) => setTimeout(res, minLoadTime - elapsed));
+    }
+    hidePageLoad();
+  } catch (err) {
+    hidePageLoad();
+    if (!navigator.onLine) await showOffline();
+    else await show500();
+  }
 }
-
 // ------------------------------
-// Intercepta links <a data-link> para SPA
+// Intercepta links <a data-link>
 // ------------------------------
 function navigate(event) {
   const link = event.target.closest("a[data-link]");
@@ -137,12 +139,14 @@ function navigate(event) {
 // ------------------------------
 // Inicialização SPA
 // ------------------------------
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  document.body.addEventListener("click", navigate);
   window.addEventListener("hashchange", () =>
     handleRoute(location.hash.slice(1) || "/")
   );
-  document.body.addEventListener("click", navigate);
 
-  // inicializa rota atual ou default
-  handleRoute(location.hash.slice(1) || "/");
+  // inicializa rota atual com pageLoad
+  await showPageLoad();
+  await handleRoute(location.hash.slice(1) || "/");
+  hidePageLoad();
 });

@@ -1,60 +1,83 @@
-(function () {
-  const containerId = "app"; // onde a página será injetada
-  const loaderId = "pageLoad";
+// gateways.js
+import { config } from "../src/main.js";
+import { fetchPage } from "./children.js";
 
-  // Cria container principal se não existir
-  let container = document.getElementById(containerId);
-  if (!container) {
-    container = document.createElement("div");
-    container.id = containerId;
-    document.body.appendChild(container);
+const content = document.getElementById("route");
+
+// ------------------------------
+// Função genérica para carregar qualquer página de gateway
+// ------------------------------
+async function loadGateway(type, fallbackText = "Erro") {
+  const path = config.gateway?.[type];
+  if (!path) {
+    console.error(`config.gateway.${type} não configurado`);
+    content.innerHTML = `<h1>${fallbackText}</h1>`;
+    document.title = fallbackText;
+    return;
   }
 
-  // Cria loader full-screen
-  let loader = document.getElementById(loaderId);
+  try {
+    const html = await fetchPage(
+      path.endsWith(".html") ? path : `${path}.html`
+    );
+    content.innerHTML = html;
+    document.title = fallbackText;
+  } catch (err) {
+    console.error(`Falha ao carregar gateway ${type}:`, err);
+    content.innerHTML = `<h1>${fallbackText}</h1>`;
+    document.title = fallbackText;
+  }
+}
+
+// ------------------------------
+// PageLoad full-screen
+// ------------------------------
+export async function showPageLoad() {
+  if (!config.gateway?.pageLoad) return;
+
+  // cria overlay se não existir
+  let loader = document.getElementById("pageLoad");
   if (!loader) {
     loader = document.createElement("div");
-    loader.id = loaderId;
-    loader.style.cssText = `
-        position: fixed;
-        top:0;
-        left:0;
-        width:100%;
-        height:100%;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        background:#1e1e1e;
-        color:#fff;
-        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-        font-size:18px;
-        z-index:9999;
-      `;
-    loader.innerHTML = "Carregando…";
+    loader.id = "pageLoad";
+
     document.body.appendChild(loader);
   }
 
-  // Função para carregar página com loader
-  window.loadWithPageLoad = async function (pagePath) {
-    loader.style.display = "flex";
+  loader.style.display = "flex";
 
-    try {
-      const res = await fetch(
-        pagePath.endsWith(".html") ? pagePath : `${pagePath}.html`
-      );
-      if (!res.ok) throw new Error(`Falha ao buscar ${pagePath}`);
-      const html = await res.text();
-      container.innerHTML = html;
-    } catch (err) {
-      console.error("Erro ao carregar a página:", err);
-      container.innerHTML = `<h1 style="color:#fff;text-align:center;margin-top:2rem">Erro ao carregar a página</h1>`;
-    } finally {
-      loader.style.display = "none";
-    }
-  };
+  try {
+    const html = await fetchPage(
+      config.gateway.pageLoad.endsWith(".html")
+        ? config.gateway.pageLoad
+        : `${config.gateway.pageLoad}.html`
+    );
+    loader.innerHTML = html;
+  } catch (err) {
+    console.error("Falha ao carregar pageLoad:", err);
+    loader.innerHTML = "Carregando…";
+  }
+}
 
-  // Exemplo de uso automático: carrega home.html
-  document.addEventListener("DOMContentLoaded", () => {
-    loadWithPageLoad(".app/Home/home.html");
-  });
-})();
+// ------------------------------
+export function hidePageLoad() {
+  const loader = document.getElementById("pageLoad");
+  if (!loader) return;
+  loader.style.display = "none";
+  loader.innerHTML = "";
+}
+
+// ------------------------------
+// Atalhos para páginas de erro
+// ------------------------------
+export async function show404() {
+  await loadGateway("error404", "404 - Página não encontrada");
+}
+
+export async function show500() {
+  await loadGateway("error500", "500 - Erro interno");
+}
+
+export async function showOffline() {
+  await loadGateway("errorOffline", "Sem conexão");
+}

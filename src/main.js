@@ -33,6 +33,7 @@ export const config = {
     error500: "./app/pages/error/500",
     errorOffline: "./app/pages/error/offline",
     pageLoad: "./app/pages/loads/pageLoad",
+    loadTime: 500,
   },
   useChildren: true,
   persistentChild: null,

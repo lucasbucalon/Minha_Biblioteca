@@ -1,5 +1,5 @@
 // route.js
-import { routes, childrenRoutes, config } from "../src/main.js";
+import { routes, childrenRoutes, config, gateway } from "../src/main.js";
 import { fetchPage, updateChildren } from "./children.js";
 import { applyFade } from "./sheet.js";
 import {
@@ -8,21 +8,21 @@ import {
   show404,
   show500,
   showOffline,
+  loadFlow,
 } from "./gateways.js";
 
 const content = document.getElementById("route");
 
 // ------------------------------
-// Carrega Children dentro de #children-wrapper
+// Carrega children
 // ------------------------------
 async function loadChild(path) {
-  if (!path.startsWith("/")) path = `/${path}`;
-  const route = childrenRoutes.find((r) => r.path.test(path));
   const wrapper = document.querySelector("#children-wrapper");
   if (!wrapper) return;
 
+  const route = childrenRoutes.find((r) => r.path.test(path));
   if (!route) {
-    await show404();
+    show404();
     return;
   }
 
@@ -34,16 +34,13 @@ async function loadChild(path) {
       await updateChildren(wrapper, html, route.page);
     });
   } catch (err) {
-    if (!navigator.onLine) {
-      await showOffline();
-    } else {
-      await show500();
-    }
+    if (!navigator.onLine) showOffline();
+    else show500();
   }
 }
 
 // ------------------------------
-// Carrega Layout principal
+// Carrega layout principal
 // ------------------------------
 const loadedLayouts = new Set();
 
@@ -57,25 +54,31 @@ async function loadLayout(page) {
     content.innerHTML = html;
     loadedLayouts.add(page);
   } catch (err) {
-    await show500();
+    show500();
   }
 }
 
 // ------------------------------
-// Gerenciar rotas SPA com pageLoad
+// Gerencia rotas SPA (somente main + children)
 // ------------------------------
 export async function handleRoute(path) {
   if (!path.startsWith("/")) path = `/${path}`;
 
+  const startTime = Date.now();
+  const minLoadTime = gateway.load.loadTime || 1000;
+
+  // flows → usamos loadFlow (refresh completo)
+  if (gateway.flows.some((f) => f.path.test(path))) {
+    loadFlow(path);
+    return;
+  }
+
   const mainRoute = routes.find((r) => r.path.test(path));
   const childRoute = childrenRoutes.find((r) => r.path.test(path));
 
-  const minLoadTime = config.gateway.loadTime;
-  const startTime = Date.now();
-
   try {
     if (mainRoute) {
-      await showPageLoad(); // loader só para rota principal
+      await showPageLoad();
       await loadLayout(mainRoute.page);
 
       if (config.useChildren) {
@@ -84,15 +87,12 @@ export async function handleRoute(path) {
           hash && childrenRoutes.some((r) => r.path.test(hash))
             ? hash
             : config.defaultChild;
-        await loadChild(childPath); // troca de children sem loader
+        await loadChild(childPath);
       }
 
-      // garante tempo mínimo do loader
       const elapsed = Date.now() - startTime;
-      if (elapsed < minLoadTime) {
-        await new Promise((res) => setTimeout(res, minLoadTime - elapsed));
-      }
-
+      if (elapsed < minLoadTime)
+        await new Promise((r) => setTimeout(r, minLoadTime - elapsed));
       hidePageLoad();
       return;
     }
@@ -101,39 +101,40 @@ export async function handleRoute(path) {
       const layoutRoute =
         routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
       await loadLayout(layoutRoute.page);
-      await loadChild(path); // children sem loader
+      await loadChild(path);
       return;
     }
 
-    await show404();
-    const elapsed = Date.now() - startTime;
-    if (elapsed < minLoadTime) {
-      await new Promise((res) => setTimeout(res, minLoadTime - elapsed));
-    }
-    hidePageLoad();
+    show404();
   } catch (err) {
     hidePageLoad();
-    if (!navigator.onLine) await showOffline();
-    else await show500();
+    if (!navigator.onLine) showOffline();
+    else show500();
   }
 }
+
 // ------------------------------
-// Intercepta links <a data-link>
+// Intercepta links <a>
 // ------------------------------
 function navigate(event) {
-  const link = event.target.closest("a[data-link]");
+  const link = event.target.closest("a");
   if (!link) return;
 
-  event.preventDefault();
-  let href = link.getAttribute("href") || "/";
-  if (!href.startsWith("#")) href = `#${href}`;
-  const path = href.slice(1);
+  const href = link.getAttribute("href");
+  if (!href || href.startsWith("http")) return;
 
-  if (location.hash !== href) {
-    location.hash = href;
-  } else {
-    handleRoute(path);
+  event.preventDefault();
+  const path = href.startsWith("/") ? href : `/${href}`;
+
+  // flows → refresh
+  if (gateway.flows.some((f) => f.path.test(path))) {
+    loadFlow(path);
+    return;
   }
+
+  // SPA normal
+  if (location.hash !== `#${path}`) location.hash = `#${path}`;
+  else handleRoute(path);
 }
 
 // ------------------------------
@@ -141,11 +142,11 @@ function navigate(event) {
 // ------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
   document.body.addEventListener("click", navigate);
+
   window.addEventListener("hashchange", () =>
     handleRoute(location.hash.slice(1) || "/")
   );
 
-  // inicializa rota atual com pageLoad
   await showPageLoad();
   await handleRoute(location.hash.slice(1) || "/");
   hidePageLoad();

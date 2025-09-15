@@ -28,17 +28,27 @@ export const config = {
     layouts: "../components/layouts",
     models: "../components/models",
   },
-  gateway: {
-    error404: "./app/pages/error/404",
-    error500: "./app/pages/error/500",
-    errorOffline: "./app/pages/error/offline",
-    pageLoad: "./app/pages/loads/pageLoad",
-    loadTime: 500,
-  },
   useChildren: true,
   persistentChild: null,
   defaultChild: "/Init",
   dirsChild: "../app/Home/home",
+};
+
+export const gateway = {
+  error: {
+    error404: "./app/pages/error/404",
+    error500: "./app/pages/error/500",
+    errorOffline: "./app/pages/error/offline",
+  },
+  load: {
+    pageLoad: "./app/pages/loads/pageLoad",
+    loading: "./app/pages/loads/loading",
+    loadTime: 1000,
+  },
+  flows: [
+    { path: /^\/Politicas$/, page: "./app/pages/flows/politicas" },
+    { path: /^\/Informacoes$/, page: "./app/pages/flows/informacoes" },
+  ],
 };
 
 // ---------- Rotas ----------

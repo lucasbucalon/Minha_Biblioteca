@@ -7,6 +7,7 @@ export const imageMap = {
   logo: {
     src: "../constant/image/Frame.png",
     alt: "imagem da logo",
+    title: "Lucas Bucalon",
     // -> opcionais
     fetchpriority: "high", // "high" | "low" padrão "low"
     dark: "../constant/image/Frame.png",
@@ -20,11 +21,22 @@ export const imageMap = {
 };
 
 export const linkMap = {
-  curriculo: "../constant/pdf/Curriculo.pdf",
+  curriculo: {
+    href: "../constant/pdf/Curriculo.pdf",
+    download: true,
+    type: "application/pdf",
+    title: "Currículo",
+    "aria-label": "Currículo em PDF",
+    download: false, // ou true ou string
+  },
 };
 
 export const iconMap = {
-  icon: "../constant/svg/icon.svg",
+  icon: {
+    src: "../constant/svg/icon.svg",
+    alt: "icon",
+    title: "icon",
+  },
 };
 
 // ---------- Configurações de animação ----------

@@ -1,25 +1,32 @@
+// utils.js
 import { imageMap, linkMap, iconMap } from "../src/main.js";
 
 //------------------
-// FUNÇÃO UNIVERSAL PARA APLICAR ASSETS
+// IFRAME ROUTES
 //------------------
-export function applyAssets(root = document) {
+
+//------------------
+// IMAGENS
+//------------------
+function applyImages(root) {
   const images = root.querySelectorAll("[data-image]");
   images.forEach((img) => {
     const name = img.getAttribute("data-image");
     const cfg = imageMap[name];
-    if (!cfg)
-      return console.warn(`⚠️ data-image="${name}" não encontrado no imageMap`);
+    if (!cfg) {
+      console.warn(`⚠️ data-image="${name}" não encontrado no imageMap`);
+      return;
+    }
 
     img.alt = cfg.alt || name;
+    img.title = cfg.title || name;
     img.decoding = "async";
     img.loading = "lazy";
     img.fetchPriority = cfg.fetchpriority || "low";
 
     let finalSrc = cfg.src;
-    const isDark = cfg.dark
-      ? window.matchMedia("(prefers-color-scheme: dark)").matches
-      : false;
+    const isDark =
+      cfg.dark && window.matchMedia("(prefers-color-scheme: dark)").matches;
 
     if (cfg.set) {
       const w = window.innerWidth;
@@ -37,24 +44,38 @@ export function applyAssets(root = document) {
 
     img.src = finalSrc;
   });
+}
 
-  //------------------
-  // LINKS
-  //------------------
+//------------------
+// LINKS
+//------------------
+function applyLinks(root) {
   const links = root.querySelectorAll("[data-link]");
   links.forEach((link) => {
     const name = link.getAttribute("data-link");
-    const href = linkMap[name];
-    if (!href)
-      return console.warn(`⚠️ data-link="${name}" não encontrado no linkMap`);
-    link.href = href;
-    link.rel = "noopener noreferrer";
-  });
+    const cfg = linkMap[name];
+    if (!cfg) {
+      console.warn(`⚠️ data-link="${name}" não encontrado no linkMap`);
+      return;
+    }
 
-  //------------------
-  // ICONS
-  //------------------
-  applyIcons(root);
+    link.href = cfg.href;
+    link.title = cfg.title || name;
+    link.rel = "noopener noreferrer";
+
+    if (cfg.type) link.type = cfg.type;
+    if (cfg["aria-label"]) link.setAttribute("aria-label", cfg["aria-label"]);
+
+    if (cfg.download) {
+      if (cfg.download === true) {
+        link.setAttribute("download", "");
+      } else {
+        link.setAttribute("download", cfg.download);
+      }
+    }
+
+    if (cfg.target) link.target = cfg.target;
+  });
 }
 
 //------------------
@@ -67,17 +88,21 @@ class IconElement extends HTMLElement {
 
   render() {
     const name = this.getAttribute("data-icon");
-    const src = iconMap[name];
-    if (!src) return;
+    const cfg = iconMap[name];
+    if (!cfg) return;
 
     if (!this.querySelector("img")) {
       const img = document.createElement("img");
-      img.src = src;
-      img.alt = name;
+      img.src = cfg.src || cfg; // suporta string simples ou objeto
+      img.alt = this.getAttribute("alt") || name;
+      img.title = this.getAttribute("title") || name;
       img.loading = "lazy";
       img.decoding = "async";
+
       if (this.hasAttribute("width")) img.width = this.getAttribute("width");
       if (this.hasAttribute("height")) img.height = this.getAttribute("height");
+
+      img.setAttribute("role", "img");
       this.appendChild(img);
     }
   }
@@ -98,6 +123,15 @@ export function applyIcons(root = document) {
 }
 
 //------------------
+// UNIVERSAL APPLY
+//------------------
+export function applyAssets(root = document) {
+  applyImages(root);
+  applyLinks(root);
+  applyIcons(root);
+}
+
+//------------------
 // OBSERVADOR AUTOMÁTICO
 //------------------
 export function observeAssets(container = document.getElementById("route")) {
@@ -107,9 +141,10 @@ export function observeAssets(container = document.getElementById("route")) {
 }
 
 //------------------
-// INICIALIZAÇÃO
+// INICIALIZAÇÃO GLOBAL
 //------------------
 export function initAssets() {
   applyAssets();
   observeAssets();
+  // initIframeRoutes();
 }

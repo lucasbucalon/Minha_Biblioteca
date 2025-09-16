@@ -11,8 +11,8 @@ export const imageMap = {
     fetchpriority: "high", // "high" | "low" padrão "low"
     dark: "../constant/image/Frame.png",
     set: {
-      src: "../constant/image/Framee.png",
-      Dark: "../constant/image/Framee.png",
+      src: "../constant/image/Frame.png",
+      Dark: "../constant/image/Frame.png",
       maxWidth: 768, // número
       // minWidth: 768, // número
     },

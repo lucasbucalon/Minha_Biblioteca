@@ -4,7 +4,19 @@ import { lazyLoadRoute } from "../modules/optimize.js";
 import { configureSheet } from "../modules/sheet.js"; // sheet.js atualizado
 
 export const imageMap = {
-  logo: "../constant/image/Frame.png",
+  logo: {
+    src: "../constant/image/Frame.png",
+    alt: "imagem da logo",
+    // -> opcionais
+    fetchpriority: "high", // "high" | "low" padrão "low"
+    dark: "../constant/image/Frame.png",
+    set: {
+      src: "../constant/image/Framee.png",
+      Dark: "../constant/image/Framee.png",
+      maxWidth: 768, // número
+      // minWidth: 768, // número
+    },
+  },
 };
 
 export const linkMap = {
@@ -13,7 +25,6 @@ export const linkMap = {
 
 export const iconMap = {
   icon: "../constant/svg/icon.svg",
-  fire: "../constant/svg/fire.svg", // exemplo de SVG animado
 };
 
 // ---------- Configurações de animação ----------

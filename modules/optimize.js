@@ -1,17 +1,17 @@
 // optimize.js
-
 import { config } from "../src/main.js";
 
-// otimizações: ignore errors, carregar recursos dinamicamente, lazy by visibility e lazy por rota
+// ------------------------------
+// IGNORAR ERROS IRRELEVANTES
+// ------------------------------
+const IGNORED_ERRORS = [
+  "A listener indicated an asynchronous response",
+  "chrome-extension",
+];
 
-// ignorar erros irrelevantes (extensions etc.)
 window.addEventListener("error", (event) => {
   const msg = event.message || "";
-  const ignore = [
-    "A listener indicated an asynchronous response",
-    "chrome-extension",
-  ];
-  if (ignore.some((p) => msg.includes(p))) {
+  if (IGNORED_ERRORS.some((p) => msg.includes(p))) {
     console.warn("Erro ignorado:", msg);
     event.preventDefault();
   }
@@ -19,17 +19,23 @@ window.addEventListener("error", (event) => {
 
 window.addEventListener("unhandledrejection", (event) => {
   const reason = event.reason || "";
-  if (
-    typeof reason === "string" &&
-    reason.includes("A listener indicated an asynchronous response")
-  ) {
+  if (typeof reason === "string" && reason.includes(IGNORED_ERRORS[0])) {
     console.warn("Rejeição de promessa ignorada:", reason);
     event.preventDefault();
   }
 });
 
-const loadedAssets = { css: new Set(), js: new Set() };
+// ------------------------------
+// TRACK DE ASSETS CARREGADOS
+// ------------------------------
+const loadedAssets = {
+  css: new Set(),
+  js: new Set(),
+};
 
+// ------------------------------
+// FUNÇÕES DE CARREGAMENTO DINÂMICO
+// ------------------------------
 export async function loadCSS(href) {
   if (loadedAssets.css.has(href)) return;
   return new Promise((resolve) => {
@@ -57,24 +63,26 @@ export async function loadJS(src) {
   });
 }
 
-// IntersectionObserver lazy (componentes e data-lazy)
+// ------------------------------
+// OBSERVER PARA LAZY LOAD POR VISIBILIDADE
+// ------------------------------
 const observer = new IntersectionObserver(
   (entries) => {
     entries.forEach(async (entry) => {
       if (!entry.isIntersecting) return;
       const el = entry.target;
 
-      // carregar assets constantes via classe tipo "buttons-ripple" -> /constant/buttons/ripple/...
+      // CARREGA COMPONENTES COM BASE EM CLASSES
       Array.from(el.classList)
         .filter((cls) => cls.includes("-"))
         .forEach(async (cls) => {
           const [category, name] = cls.split("-");
           const css = `${config.dirs.models}/${category}/${name}/styles.css`;
           const js = `${config.dirs.models}/${category}/${name}/script.js`;
+
           try {
             await loadCSS(css);
             await loadJS(js);
-            // se o componente expõe window.Components['category-name'].init(), roda
             const key = `${category}-${name}`;
             if (window.Components?.[key]?.init) window.Components[key].init();
           } catch (e) {
@@ -82,19 +90,16 @@ const observer = new IntersectionObserver(
           }
         });
 
-      // data-lazy: caminho do módulo ES
+      // CARREGA MÓDULOS VIA DATA-LAZY
       if (el.dataset.lazy) {
         import(el.dataset.lazy)
           .then((m) => m.init?.(el))
           .catch(() => {});
       }
 
-      // scripts tipo .../script.js dentro do elemento (module)
+      // CARREGA SCRIPTS TYPE=MODULE DENTRO DO ELEMENTO
       el.querySelectorAll("script[type='module'][src$='script.js']").forEach(
-        (s) => {
-          const src = s.getAttribute("src");
-          loadJS(src).catch(() => {});
-        }
+        (s) => loadJS(s.src).catch(() => {})
       );
 
       observer.unobserve(el);
@@ -103,31 +108,38 @@ const observer = new IntersectionObserver(
   { threshold: 0.1 }
 );
 
+// ------------------------------
+// INICIALIZAÇÃO DE LAZY LOAD
+// ------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   document
     .querySelectorAll("[class*='-'], [data-lazy]")
     .forEach((el) => observer.observe(el));
 
-  // garantir script essenciais carregados (não duplicar)
-  loadJS("./modules/layouts.js").catch(() => {});
-  loadJS("./modules/models.js").catch(() => {});
-  loadJS("./modules/children.js").catch(() => {});
+  // CARREGAR SCRIPTS ESSENCIAIS
+  [
+    "./modules/layouts.js",
+    "./modules/models.js",
+    "./modules/children.js",
+    "./modules/utils.js",
+  ].forEach((src) => loadJS(src).catch(() => {}));
 });
 
-// Lazy load por rota: carrega módulos marcados com data-lazy na página corrente
+// ------------------------------
+// FUNÇÃO PARA LAZY LOAD POR ROTA
+// ------------------------------
 export function lazyLoadRoute(hash) {
   const normalized = (hash || "").replace(/^#/, "");
-  // carrega todos data-lazy da página atual
+
+  // carrega data-lazy da página
   document.querySelectorAll("[data-lazy]").forEach((el) => {
     import(el.dataset.lazy)
       .then((m) => m.init?.(el))
       .catch(() => {});
   });
 
-  // também carrega scripts module que terminam em script.js
+  // scripts type module da página
   document
     .querySelectorAll("script[type='module'][src$='script.js']")
-    .forEach((s) => {
-      loadJS(s.src).catch(() => {});
-    });
+    .forEach((s) => loadJS(s.src).catch(() => {}));
 }

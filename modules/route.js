@@ -123,6 +123,15 @@ function navigate(event) {
   const href = link.getAttribute("href");
   if (!href || href.startsWith("http")) return;
 
+  if (
+    link.target === "_blank" ||
+    href.startsWith("http") ||
+    href.startsWith("mailto:") ||
+    href.startsWith("#")
+  ) {
+    return; // deixa o navegador abrir normalmente
+  }
+
   event.preventDefault();
   const path = href.startsWith("/") ? href : `/${href}`;
 

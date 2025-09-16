@@ -3,6 +3,19 @@ import { enableSwipeNavigation } from "../modules/mobile.js";
 import { lazyLoadRoute } from "../modules/optimize.js";
 import { configureSheet } from "../modules/sheet.js"; // sheet.js atualizado
 
+export const imageMap = {
+  logo: "../constant/image/Frame.png",
+};
+
+export const linkMap = {
+  curriculo: "../constant/pdf/Curriculo.pdf",
+};
+
+export const iconMap = {
+  icon: "../constant/svg/icon.svg",
+  fire: "../constant/svg/fire.svg", // exemplo de SVG animado
+};
+
 // ---------- Configurações de animação ----------
 export const animated = {
   scroll: {

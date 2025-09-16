@@ -1,11 +1,10 @@
 .content_contact {
   ul {
+    width: 100%;
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 24px 0;
-    width: 80%;
-    margin: auto;
+    padding: 24px 10px;
     text-align: center;
   }
 
@@ -15,10 +14,14 @@
     color: white;
   }
 
+  p {
+  }
+
   ul li a {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 20px;
     color: white;
     padding: 16px 24px;
     font-size: 2rem;
@@ -26,7 +29,7 @@
     border-radius: 10px;
     font-weight: 500;
     transition: background 0.2s;
-    gap: 20px;
+    cursor: pointer;
   }
 
   ul li a:hover {

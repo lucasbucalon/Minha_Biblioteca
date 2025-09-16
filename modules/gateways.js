@@ -81,7 +81,7 @@ export function hidePageLoad() {
 // Atalhos para páginas de erro
 // ------------------------------
 export async function show404() {
-  if (location.hash !== "#/404") history.pushState(null, "", "#/404");
+  if (location.hash !== "#/404") history.pushState({}, "", "#/404");
   await loadGateway("error404", "404 - Página não encontrada");
 }
 

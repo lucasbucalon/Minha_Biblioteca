@@ -1,5 +1,5 @@
 // optimize.js
-import { config } from "../src/main.js";
+import { config } from "../main.js";
 
 // ------------------------------
 // IGNORAR ERROS IRRELEVANTES

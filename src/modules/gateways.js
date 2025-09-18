@@ -1,5 +1,5 @@
 // gateways.js
-import { gateway } from "../src/main.js";
+import { gateway } from "../main.js";
 import { fetchPage } from "./children.js";
 import { handleRoute } from "./route.js";
 

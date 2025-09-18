@@ -1,5 +1,5 @@
 // pwa.js
-import { mobile } from "../src/main.js";
+import { mobile } from "../main.js";
 // Registra o Service Worker
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker

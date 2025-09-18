@@ -1,5 +1,5 @@
 // route.js
-import { routes, childrenRoutes, config, gateway } from "../src/main.js";
+import { routes, childrenRoutes, config, gateway } from "../main.js";
 import { fetchPage, updateChildren } from "./children.js";
 import { applyFade } from "./sheet.js";
 import {

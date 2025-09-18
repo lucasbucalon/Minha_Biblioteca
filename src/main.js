@@ -11,16 +11,11 @@ initAssets();
 // opcional: importe utilitários extras que antes estavam no index.html
 import "/modules/localstorage.js";
 import "/modules/gateways.js";
-import "/modules/route.js";
 import "/modules/children.js";
-import "/modules/mobile.js";
 import "/modules/layouts.js";
 import "/modules/models.js";
-import "/modules/optimize.js";
 import "/modules/pwa.js";
-import "/modules/sheet.js";
 import "/modules/meta.js";
-import "/modules/utils.js";
 
 // ---------- Mapas de recursos ----------
 export const imageMap = {

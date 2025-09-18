@@ -9,13 +9,18 @@ import { initAssets } from "/modules/utils.js";
 initAssets();
 
 // opcional: importe utilitários extras que antes estavam no index.html
-import "/modules/meta.js";
+import "/modules/localstorage.js";
 import "/modules/gateways.js";
+import "/modules/route.js";
 import "/modules/children.js";
+import "/modules/mobile.js";
 import "/modules/layouts.js";
 import "/modules/models.js";
+import "/modules/optimize.js";
 import "/modules/pwa.js";
-import "/modules/utils.js"; // se precisar do initAssets()
+import "/modules/sheet.js";
+import "/modules/meta.js";
+import "/modules/utils.js";
 
 // ---------- Mapas de recursos ----------
 export const imageMap = {

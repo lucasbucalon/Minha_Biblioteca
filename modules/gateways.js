@@ -1,6 +1,7 @@
 // gateways.js
 import { gateway } from "../src/main.js";
 import { fetchPage } from "./children.js";
+import { handleRoute } from "./route.js";
 
 const content = document.getElementById("route");
 
@@ -81,17 +82,17 @@ export function hidePageLoad() {
 // Atalhos para páginas de erro
 // ------------------------------
 export async function show404() {
-  if (location.hash !== "#/404") history.pushState({}, "", "#/404");
+  history.pushState({}, "", "/404");
   await loadGateway("error404", "404 - Página não encontrada");
 }
 
 export async function show500() {
-  if (location.hash !== "#/500") history.pushState(null, "", "#/500");
+  history.pushState({}, "", "/500");
   await loadGateway("error500", "500 - Erro interno");
 }
 
 export async function showOffline() {
-  if (location.hash !== "#/offline") history.pushState(null, "", "#/offline");
+  history.pushState({}, "", "/offline");
   await loadGateway("errorOffline", "Sem conexão");
 }
 
@@ -105,19 +106,16 @@ export async function loadFlow(path) {
   await showPageLoad();
 
   try {
-    // Atualiza o hash amigável
-    if (location.hash !== `#${path}`) {
-      location.hash = `#${path}`;
-    }
+    // Atualiza URL sem #
+    if (location.pathname !== path) history.pushState({}, "", path);
 
-    // Carrega o conteúdo do arquivo HTML
     const html = await fetchPage(
       flowRoute.page.endsWith(".html")
         ? flowRoute.page
         : `${flowRoute.page}.html`
     );
     content.innerHTML = html;
-    document.title = title;
+    document.title = flowRoute.title || "Flow Page";
   } catch (err) {
     console.error("Falha ao carregar flow:", err);
   } finally {
@@ -128,10 +126,10 @@ export async function loadFlow(path) {
 // ------------------------------
 // Tratamento do botão de voltar/avançar
 // ------------------------------
-window.addEventListener("hashchange", () => {
-  const path = location.hash.slice(1);
-  const flowRoute = gateway.flows.find((f) => f.path.test(path));
+window.addEventListener("popstate", () => {
+  const path = location.pathname;
 
+  const flowRoute = gateway.flows.find((f) => f.path.test(path));
   if (flowRoute) {
     loadFlow(path);
   } else {

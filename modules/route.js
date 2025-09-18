@@ -12,9 +12,10 @@ import {
 } from "./gateways.js";
 
 const content = document.getElementById("route");
+const loadedLayouts = new Set();
 
 // ------------------------------
-// Carrega children
+// Carrega child
 // ------------------------------
 async function loadChild(path) {
   const wrapper = document.querySelector("#children-wrapper");
@@ -42,11 +43,8 @@ async function loadChild(path) {
 // ------------------------------
 // Carrega layout principal
 // ------------------------------
-const loadedLayouts = new Set();
-
 async function loadLayout(page) {
   if (loadedLayouts.has(page)) return;
-
   try {
     const html = await fetchPage(
       page.endsWith(".html") ? page : `${page}.html`
@@ -59,15 +57,14 @@ async function loadLayout(page) {
 }
 
 // ------------------------------
-// Gerencia rotas SPA (somente main + children)
+// Gerencia rotas SPA
 // ------------------------------
 export async function handleRoute(path) {
   if (!path.startsWith("/")) path = `/${path}`;
-
   const startTime = Date.now();
   const minLoadTime = gateway.load.loadTime || 1000;
 
-  // flows → usamos loadFlow (refresh completo)
+  // Flows → refresh completo
   if (gateway.flows.some((f) => f.path.test(path))) {
     loadFlow(path);
     return;
@@ -77,16 +74,14 @@ export async function handleRoute(path) {
   const childRoute = childrenRoutes.find((r) => r.path.test(path));
 
   try {
+    await showPageLoad();
+
     if (mainRoute) {
-      await showPageLoad();
       await loadLayout(mainRoute.page);
 
       if (config.useChildren) {
-        const hash = location.hash.slice(1);
-        const childPath =
-          hash && childrenRoutes.some((r) => r.path.test(hash))
-            ? hash
-            : config.defaultChild;
+        const pathParts = path.split("/").filter(Boolean);
+        const childPath = pathParts[1] || config.defaultChild;
         await loadChild(childPath);
       }
 
@@ -98,13 +93,16 @@ export async function handleRoute(path) {
     }
 
     if (childRoute) {
+      // Encontra layout principal correto para esse child
       const layoutRoute =
         routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
       await loadLayout(layoutRoute.page);
       await loadChild(path);
+      hidePageLoad();
       return;
     }
 
+    hidePageLoad();
     show404();
   } catch (err) {
     hidePageLoad();
@@ -121,29 +119,24 @@ function navigate(event) {
   if (!link) return;
 
   const href = link.getAttribute("href");
-  if (!href || href.startsWith("http")) return;
-
   if (
-    link.target === "_blank" ||
+    !href ||
     href.startsWith("http") ||
     href.startsWith("mailto:") ||
-    href.startsWith("#")
-  ) {
-    return; // deixa o navegador abrir normalmente
-  }
+    link.target === "_blank"
+  )
+    return;
 
   event.preventDefault();
   const path = href.startsWith("/") ? href : `/${href}`;
 
-  // flows → refresh
   if (gateway.flows.some((f) => f.path.test(path))) {
     loadFlow(path);
     return;
   }
 
-  // SPA normal
-  if (location.hash !== `#${path}`) location.hash = `#${path}`;
-  else handleRoute(path);
+  if (location.pathname !== path) window.history.pushState({}, "", path);
+  handleRoute(path);
 }
 
 // ------------------------------
@@ -151,12 +144,9 @@ function navigate(event) {
 // ------------------------------
 document.addEventListener("DOMContentLoaded", async () => {
   document.body.addEventListener("click", navigate);
-
-  window.addEventListener("hashchange", () =>
-    handleRoute(location.hash.slice(1) || "/")
-  );
+  window.addEventListener("popstate", () => handleRoute(location.pathname));
 
   await showPageLoad();
-  await handleRoute(location.hash.slice(1) || "/");
+  await handleRoute(location.pathname);
   hidePageLoad();
 });

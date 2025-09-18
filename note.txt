@@ -1,21 +1,69 @@
-⚡ Com Node.js
+🚀 Build & Dev
 
-Gerenciamento de dependências (npm install).
+Gerenciamento de dependências → tudo via npm install.
 
-Bundling e minificação de JS/CSS.
+Bundling/Minificação → o Vite cuida sozinho com vite build.
 
-Suporte a imports relativos (import … from …).
+Imports relativos/absolutos → Vite resolve import com alias (@/ → src/).
 
-Transpilação (TypeScript → JS, SCSS/SASS → CSS, Babel).
+Transpilação:
 
-Servidor local com hot reload e simulação de rotas.
+TypeScript já integrado no Vite.
 
-URLs limpas (sem #) com history.pushState funcionando.
+Suporte a SCSS/SASS.
 
-Back/forward funcional no navegador.
+Babel só se precisar de compatibilidade legacy.
 
-PWA avançado (Workbox, cache strategies, manifest).
+🌐 SPA & Navegação
 
-SEO avançado (pré-render, metatags dinâmicas).
+Servidor local com Hot Reload → vite dev.
 
-Ferramentas de qualidade: ESLint, Prettier, Jest/Vitest.
+URLs limpas → history.pushState nativo (já configurado com vercel.json).
+
+Back/forward funcional → resolvido com SPA Router.
+
+Iframe sem JS → pode usar <iframe> direto, sem hack de JS. O Vite não atrapalha nisso.
+
+📱 PWA Completo
+
+Workbox → instala vite-plugin-pwa (npm i vite-plugin-pwa).
+
+Manifest.json configurado com ícones (Android/iOS/Desktop).
+
+Cache strategies avançadas:
+
+StaleWhileRevalidate pra HTML.
+
+CacheFirst pra imagens e assets pesados.
+
+NetworkFirst pra APIs dinâmicas.
+
+Instalação universal → funciona em:
+
+Chrome/Edge/Opera (Android + Desktop).
+
+Safari (iOS + Mac).
+
+Firefox Android.
+
+🔍 SEO & Qualidade
+
+Pré-render/SSR → usar plugin vite-ssg se quiser gerar HTML estático pro Google.
+
+Metatags dinâmicas → SPA pode atualizar com document.title + <meta> via JS.
+
+Ferramentas de qualidade:
+
+ESLint + Prettier → formatação e boas práticas.
+
+Jest/Vitest → testes unitários.
+
+🎯 Diferenciais que você pode explorar
+
+Criar um Router customizado (já começou) → dá identidade ao seu projeto.
+
+PWA com instalação universal e offline first → diferencial forte.
+
+SEO + pré-render → poucas SPAs fazem bem, isso pode te destacar.
+
+UX avançada → animações entre rotas, loaders customizados, acessibilidade.

@@ -3,19 +3,18 @@ import { enableSwipeNavigation } from "../modules/mobile.js";
 import { lazyLoadRoute } from "../modules/optimize.js";
 import { configureSheet } from "../modules/sheet.js"; // sheet.js atualizado
 
+// ---------- Mapas de recursos ----------
 export const imageMap = {
   logo: {
     src: "../constant/image/Frame.png",
     alt: "imagem da logo",
     title: "Lucas Bucalon",
-    // -> opcionais
-    fetchpriority: "high", // "high" | "low" padrão "low"
+    fetchpriority: "high",
     dark: "../constant/image/Frame.png",
     set: {
       src: "../constant/image/Frame.png",
       Dark: "../constant/image/Frame.png",
-      maxWidth: 768, // número
-      // minWidth: 768, // número
+      maxWidth: 768,
     },
   },
 };
@@ -23,11 +22,10 @@ export const imageMap = {
 export const linkMap = {
   curriculo: {
     href: "../constant/pdf/Curriculo.pdf",
-    download: true,
+    download: false,
     type: "application/pdf",
     title: "Currículo",
     "aria-label": "Currículo em PDF",
-    download: false, // ou true ou string
   },
 };
 
@@ -42,19 +40,19 @@ export const iconMap = {
 // ---------- Configurações de animação ----------
 export const animated = {
   scroll: {
-    enabled: true, // ativa smooth scroll
-    mode: "smooth", // "original" | "smooth" | "heavy" | "custom"
+    enabled: true,
+    mode: "smooth",
     custom: {
-      ease: 0.4, // 0.05 = pesado, 0.4 = leve
-      stepMin: 1, // velocidade mínima px/frame
-      stepMax: 60, // velocidade máxima px/frame
+      ease: 0.4,
+      stepMin: 1,
+      stepMax: 60,
     },
   },
   fade: {
-    enabled: true, // ativa fade
-    duration: 250, // duração em ms
-    useTranslate: false, // aplica translateY junto
-    translateValue: "1px", // valor do translate
+    enabled: true,
+    duration: 250,
+    useTranslate: false,
+    translateValue: "1px",
   },
 };
 
@@ -70,6 +68,7 @@ export const config = {
   dirsChild: "../app/Home/home",
 };
 
+// ---------- Configurações de gateway ----------
 export const gateway = {
   error: {
     error404: "./app/pages/error/404",
@@ -89,7 +88,7 @@ export const gateway = {
 
 // ---------- Rotas ----------
 export const routes = [
-  { path: /^\/$/, page: "../site/site" },
+  { path: /^\/$/, page: "../app/site/site" },
   { path: /^\/Home$/, page: config.dirsChild },
 ];
 
@@ -117,13 +116,14 @@ export const mobile = {
     "3. Procure 'Instalar' ou 'Adicionar à Tela de Início'.\n" +
     "4. Siga as instruções.",
 };
+
 // ---------- Inicialização ----------
 document.addEventListener("DOMContentLoaded", () => {
   // Inicializa sheet.js com configs (scroll + fade)
   configureSheet(animated);
 
-  // Inicializa rotas SPA
-  handleRoute(location.hash.slice(1) || "/");
+  // Inicializa rotas SPA usando location.pathname (URLs limpas)
+  handleRoute(location.pathname || "/");
 
   // Swipe navigation mobile
   enableSwipeNavigation({
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Lazy load das rotas
   document.addEventListener("spa:pageLoaded", () => {
-    lazyLoadRoute(location.hash);
+    lazyLoadRoute(location.pathname);
   });
 
   console.log("Main.js initialized: animated config", animated);

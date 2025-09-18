@@ -5,6 +5,8 @@ import { handleRoute } from "/modules/route.js";
 import { enableSwipeNavigation } from "/modules/mobile.js";
 import { lazyLoadRoute } from "/modules/optimize.js";
 import { configureSheet } from "/modules/sheet.js"; // atualizado
+import { initAssets } from "/modules/utils.js";
+initAssets();
 
 // opcional: importe utilitários extras que antes estavam no index.html
 import "/modules/meta.js";

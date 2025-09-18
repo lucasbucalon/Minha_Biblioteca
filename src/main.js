@@ -1,19 +1,19 @@
 // src/main.js
 
 // ---------- Imports de módulos ----------
-import { handleRoute } from "./modules/route.js";
-import { enableSwipeNavigation } from "./modules/mobile.js";
-import { lazyLoadRoute } from "./modules/optimize.js";
-import { configureSheet } from "./modules/sheet.js"; // atualizado
+import { handleRoute } from "/modules/route.js";
+import { enableSwipeNavigation } from "/modules/mobile.js";
+import { lazyLoadRoute } from "/modules/optimize.js";
+import { configureSheet } from "/modules/sheet.js"; // atualizado
 
 // opcional: importe utilitários extras que antes estavam no index.html
-import "./modules/meta.js";
-import "./modules/gateways.js";
-import "./modules/children.js";
-import "./modules/layouts.js";
-import "./modules/models.js";
-import "./modules/pwa.js";
-import "./modules/utils.js"; // se precisar do initAssets()
+import "/modules/meta.js";
+import "/modules/gateways.js";
+import "/modules/children.js";
+import "/modules/layouts.js";
+import "/modules/models.js";
+import "/modules/pwa.js";
+import "/modules/utils.js"; // se precisar do initAssets()
 
 // ---------- Mapas de recursos ----------
 export const imageMap = {

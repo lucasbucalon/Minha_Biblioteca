@@ -118,10 +118,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // CARREGAR SCRIPTS ESSENCIAIS
   [
-    "./modules/layouts.js",
-    "./modules/models.js",
-    "./modules/children.js",
-    "./modules/utils.js",
+    // "/modules/layouts.js",
+    // "/modules/models.js",
+    // "/modules/children.js",
+    // "/modules/utils.js",
   ].forEach((src) => loadJS(src).catch(() => {}));
 });
 

@@ -88,7 +88,7 @@ export const gateway = {
   load: {
     pageLoad: "/app/pages/loads/pageLoad",
     loading: "/app/pages/loads/loading",
-    loadTime: 1000,
+    loadTime: 500,
   },
   flows: [
     { path: /^\/Politicas$/, page: "/app/pages/flows/politicas" },

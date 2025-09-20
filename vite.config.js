@@ -9,6 +9,9 @@ export default defineConfig({
   // },
   server: {
     port: 3000, // opcional, muda a porta
+    fs: { strict: false },
+    middlewareMode: false,
+    historyApiFallback: true,
   },
   build: {
     outDir: "dist",

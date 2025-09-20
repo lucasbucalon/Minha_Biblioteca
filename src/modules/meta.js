@@ -16,7 +16,7 @@ function ensureMeta(selector, attrs) {
 }
 
 export async function distributeMetaFromManifest(
-  manifestPath = "./manifest.json"
+  manifestPath = "/manifest.json"
 ) {
   try {
     const res = await fetch(manifestPath);

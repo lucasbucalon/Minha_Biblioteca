@@ -12,7 +12,7 @@
   "theme_color": "#1e1e1e",
   "background_color": "#1e1e1e",
   "favicon": "./constant/svg/icon.svg",
-  "global_css": "../src/global.css",
+  "global_css": "/src/global.css",
   "start_url": "/index.html",
   "display": "standalone",
   "display_override": [

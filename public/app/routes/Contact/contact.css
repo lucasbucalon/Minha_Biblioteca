@@ -1,0 +1,38 @@
+.content_contact {
+  ul {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 10px;
+    text-align: center;
+  }
+
+  svg {
+    width: 30px;
+    height: 30px;
+    color: white;
+  }
+
+  p {
+  }
+
+  ul li a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    color: white;
+    padding: 16px 24px;
+    font-size: 2rem;
+    border: 1px solid white;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: background 0.2s;
+    cursor: pointer;
+  }
+
+  ul li a:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}

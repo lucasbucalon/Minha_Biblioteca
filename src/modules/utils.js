@@ -1,5 +1,5 @@
 // utils.js
-import { imageMap, linkMap, iconMap } from "../src/main.js";
+import { imageMap, linkMap, iconMap } from "../main.js";
 
 //------------------
 // IFRAME ROUTES

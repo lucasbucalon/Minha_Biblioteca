@@ -98,7 +98,7 @@ export const gateway = {
 
 // ---------- Rotas ----------
 export const routes = [
-  { path: /^\/$/, page: "/app/site/site" },
+  { path: /^\/$/, page: "./app/site/site" },
   { path: /^\/Home$/, page: config.dirsChild },
 ];
 

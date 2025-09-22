@@ -1,12 +1,12 @@
 // pwa.js
-import { mobile } from "../main.js";
+import { mobile } from "../src/main.js";
 // Registra o Service Worker
-// if ("serviceWorker" in navigator) {
-//   navigator.serviceWorker
-//     .register("/sw.js", { updateViaCache: "none" })
-//     .then(() => console.log("Service Worker registrado com sucesso!"))
-//     .catch((err) => console.error("Falha ao registrar SW:", err));
-// }
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker
+    .register("/sw.js", { updateViaCache: "none", type: "module" })
+    .then(() => console.log("Service Worker registrado com sucesso!"))
+    .catch((err) => console.error("Falha ao registrar SW:", err));
+}
 
 // pwa.js
 let deferredPrompt = null;

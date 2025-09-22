@@ -1,5 +1,5 @@
 // sw.js
-import { config } from "../src/main.js";
+// import { gateway } from "./src/main.js";
 
 const AUTO_UPDATE = true; // 🔴 true ativa atualização automática
 const CACHE_NAME = "spa-cache-v6";
@@ -9,14 +9,14 @@ const URLS_TO_CACHE = [
   "./",
   "./index.html",
   "./css/global.css",
-  "./js/route.js",
-  "./js/main.js",
-  "./js/components.js",
-  "./js/framework.js",
-  "./js/optimize.js",
-  "./js/pwa.js",
-  "./js/sheet.js",
-  "./js/localstorage.js",
+  "./modules/route.js",
+  "./src/main.js",
+  "./modules/components.js",
+  "./modules/framework.js",
+  "./modules/optimize.js",
+  "./modules/pwa.js",
+  "./modules/sheet.js",
+  "./modules/localstorage.js",
   "./app/pages/error/404.html",
   "./app/pages/error/500.html",
   "./app/pages/error/offline.html",
@@ -86,13 +86,13 @@ self.addEventListener("fetch", (event) => {
         if (event.request.mode === "navigate") {
           // se for navegação (rota do SPA), retorna página offline
           const offlinePage = await caches.match(
-            `${config.gateway.errorOffline}.html`
+            "./app/pages/error/offline.html"
           );
           return offlinePage || new Response("Offline", { status: 503 });
         }
 
         // fallback geral: retorna resposta 500
-        const errorPage = await caches.match(`${config.gateway.error500}.html`);
+        const errorPage = await caches.match("./app/pages/error/500.html");
         return errorPage || new Response("Erro interno", { status: 500 });
       }
     })()

@@ -1,5 +1,5 @@
 // optimize.js
-import { config } from "../main.js";
+import { config } from "../src/main.js";
 
 // ------------------------------
 // IGNORAR ERROS IRRELEVANTES
@@ -24,6 +24,12 @@ window.addEventListener("unhandledrejection", (event) => {
     event.preventDefault();
   }
 });
+
+if (typeof window !== "undefined") {
+  window.addEventListener("load", () => {
+    // código que depende do navegador
+  });
+}
 
 // ------------------------------
 // TRACK DE ASSETS CARREGADOS

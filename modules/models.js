@@ -1,6 +1,6 @@
 // framework.js
 
-import { config } from "../main.js";
+import { config } from "../src/main.js";
 // Carrega assets de /constant/<category>/<name> quando elementos com classe "category-name" aparecem
 window.loadConstants = async function (root = document) {
   // usa sets globais em window para persistir entre chamadas

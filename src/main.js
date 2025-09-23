@@ -9,7 +9,7 @@ import { initAssets } from "./modules/utils.js";
 initAssets();
 
 // opcional: importe utilitários extras que antes estavam no index.html
-import "./modules/localstorage.js";
+import "./modules/localStorage.js";
 import "./modules/gateways.js";
 import "./modules/children.js";
 import "./modules/layouts.js";

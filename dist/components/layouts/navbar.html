@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      nav {
+        background-color: #333;
+        padding: 13px 30px;
+        border-radius: 5px;
+      }
+
+      nav ul {
+        list-style-type: none;
+        display: flex;
+        gap: 30px;
+        justify-content: space-evenly;
+      }
+
+      nav ul li {
+        display: inline;
+      }
+
+      nav ul li a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.8rem;
+      }
+
+      nav ul li a:hover {
+        text-decoration: underline;
+      }
+
+      @media screen and (max-width: 768px) {
+        nav ul {
+          flex-direction: column;
+          gap: 20px;
+          align-items: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <ul>
+        <li><a href="/Init" page>Início</a></li>
+        <li><a href="/Botoes" page>Botões</a></li>
+        <li><a href="/Fundos" page>Fundos</a></li>
+        <li><a href="/Anotacoes" page>Anotações</a></li>
+        <li><a href="/Sobre" page>Sobre</a></li>
+        <li><a href="/Contato" page>Contato</a></li>
+      </ul>
+    </nav>
+  </body>
+</html>

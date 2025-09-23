@@ -1,0 +1,24 @@
+{
+  "name": "Minha Biblioteca",
+  "short_name": "Biblioteca",
+  "description": "Meu app incrível de SPA com offline, swipe e lazy load.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "fullscreen"
+  ],
+  "orientation": "portrait",
+  "theme_color": "#1e1e1e",
+  "background_color": "#1e1e1e",
+  "icons": [
+    {
+      "src": "/constant/image/Frame.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

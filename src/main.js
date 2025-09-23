@@ -15,7 +15,7 @@ import "./modules/children.js";
 import "./modules/layouts.js";
 import "./modules/models.js";
 import "./modules/pwa.js";
-import "./modules/meta.js";
+// import "./modules/meta.js";
 
 // ---------- Mapas de recursos ----------
 export const imageMap = {

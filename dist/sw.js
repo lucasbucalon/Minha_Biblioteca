@@ -1,13 +1,16 @@
 // sw.js
 const AUTO_UPDATE = true; // 🔴 true = network-first, false = cache-first
-const CACHE_NAME = "nexo-cache-v2";
+const CACHE_NAME = "nexo-cache-v3";
 const DYNAMIC_CACHE = "nexo-dynamic-cache";
 
-const URLS_TO_CACHE = [
+// Arquivos essenciais do build (index, CSS e PWA assets)
+const ESSENTIALS = [
   "/",
   "/index.html",
-  "/styles/global.css",
-  "/src/main.js",
+  "/global.css", // ajuste para o path real do CSS no build
+  "/manifest.json",
+  "/sw.js",
+  "/favicon.ico",
 ];
 
 // ------------------------------
@@ -16,7 +19,7 @@ const URLS_TO_CACHE = [
 self.addEventListener("install", (event) => {
   if (!AUTO_UPDATE) {
     event.waitUntil(
-      caches.open(CACHE_NAME).then((cache) => cache.addAll(URLS_TO_CACHE))
+      caches.open(CACHE_NAME).then((cache) => cache.addAll(ESSENTIALS))
     );
   }
   self.skipWaiting();
@@ -30,8 +33,9 @@ self.addEventListener("activate", (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME && key !== DYNAMIC_CACHE)
+          if (key !== CACHE_NAME && key !== DYNAMIC_CACHE) {
             return caches.delete(key);
+          }
         })
       )
     )
@@ -56,10 +60,13 @@ self.addEventListener("fetch", (event) => {
         // network-first: tenta rede, depois cache
         try {
           const networkResponse = await fetch(event.request);
+          // Cacheia apenas arquivos do site
           if (
-            requestURL.pathname.startsWith("/components/") ||
             requestURL.pathname.endsWith(".js") ||
-            requestURL.pathname.endsWith(".html")
+            requestURL.pathname.endsWith(".css") ||
+            requestURL.pathname.endsWith(".html") ||
+            requestURL.pathname.startsWith("/components/") ||
+            ESSENTIALS.includes(requestURL.pathname)
           ) {
             dynamicCache.put(event.request, networkResponse.clone());
           }
@@ -86,9 +93,11 @@ self.addEventListener("fetch", (event) => {
         try {
           const networkResponse = await fetch(event.request);
           if (
-            requestURL.pathname.startsWith("/components/") ||
             requestURL.pathname.endsWith(".js") ||
-            requestURL.pathname.endsWith(".html")
+            requestURL.pathname.endsWith(".css") ||
+            requestURL.pathname.endsWith(".html") ||
+            requestURL.pathname.startsWith("/components/") ||
+            ESSENTIALS.includes(requestURL.pathname)
           ) {
             dynamicCache.put(event.request, networkResponse.clone());
           }

@@ -69,8 +69,8 @@ export const animated = {
 // ---------- Configurações gerais ----------
 export const config = {
   dirs: {
-    layouts: "./src/components/layouts",
-    models: "./src/components/models",
+    layouts: "/components/layouts",
+    models: "/components/models",
   },
   useChildren: true,
   persistentChild: null,

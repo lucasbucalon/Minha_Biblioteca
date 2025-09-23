@@ -2,10 +2,12 @@
 import { mobile } from "../main.js";
 // Registra o Service Worker
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker
-    .register("/sw.js", { updateViaCache: "none", type: "module" })
-    .then(() => console.log("Service Worker registrado com sucesso!"))
-    .catch((err) => console.error("Falha ao registrar SW:", err));
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js", { type: "module" })
+      .then((reg) => console.log("SW registrado!", reg))
+      .catch((err) => console.error("Falha ao registrar SW:", err));
+  });
 }
 
 // pwa.js

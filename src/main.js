@@ -5,6 +5,7 @@ import { handleRoute } from "./modules/route.js";
 import { enableSwipeNavigation } from "./modules/mobile.js";
 import { lazyLoadRoute } from "./modules/optimize.js";
 import { configureSheet } from "./modules/sheet.js"; // atualizado
+import { updateMeta } from "./modules/meta.js";
 import { initAssets } from "./modules/utils.js";
 initAssets();
 
@@ -15,7 +16,48 @@ import "./modules/children.js";
 import "./modules/layouts.js";
 import "./modules/models.js";
 import "./modules/pwa.js";
-// import "./modules/meta.js";
+
+// ---------- Configurações gerais ----------
+export const config = {
+  dirs: {
+    layouts: "/components/layouts",
+    models: "/components/models",
+  },
+  useChildren: true,
+  persistentChild: null,
+  defaultChild: "/Init",
+  dirsChild: "/app/Home/home",
+};
+
+// ---------- Rotas ----------
+export const routes = [
+  { path: /^\/$/, page: "./app/site/site" },
+  { path: /^\/Home$/, page: config.dirsChild },
+];
+
+export const childrenRoutes = [
+  { path: /^\/Init$/, page: "/app/routes/Init/init" },
+  { path: /^\/Botoes$/, page: "/app/routes/Buttons/buttons" },
+  { path: /^\/Fundos$/, page: "/app/routes/Background/background" },
+  { path: /^\/Anotacoes$/, page: "/app/routes/Note/note" },
+  { path: /^\/Sobre$/, page: "/app/routes/About/about" },
+  { path: /^\/Contato$/, page: "/app/routes/Contact/contact" },
+];
+
+// ---------- Meta tags ----------
+
+updateMeta({
+  title: "Minha Biblioteca",
+  description:
+    "Um site para organizar ideias, anotações e projetos de forma prática.",
+  url: window.location.href,
+  image: "/constant/image/Frame.png",
+  type: "website",
+  author: "Lucas Bucalon",
+  keywords: "programação, SPA, SEO, marketing, web design",
+  tagName: "@bibliotecaspa",
+  themeColor: "#1e1e1e",
+});
 
 // ---------- Mapas de recursos ----------
 export const imageMap = {
@@ -66,18 +108,6 @@ export const animated = {
   },
 };
 
-// ---------- Configurações gerais ----------
-export const config = {
-  dirs: {
-    layouts: "/components/layouts",
-    models: "/components/models",
-  },
-  useChildren: true,
-  persistentChild: null,
-  defaultChild: "/Init",
-  dirsChild: "/app/Home/home",
-};
-
 // ---------- Configurações de gateway ----------
 export const gateway = {
   error: {
@@ -95,21 +125,6 @@ export const gateway = {
     { path: /^\/Informacoes$/, page: "/app/pages/flows/informacoes" },
   ],
 };
-
-// ---------- Rotas ----------
-export const routes = [
-  { path: /^\/$/, page: "./app/site/site" },
-  { path: /^\/Home$/, page: config.dirsChild },
-];
-
-export const childrenRoutes = [
-  { path: /^\/Init$/, page: "/app/routes/Init/init" },
-  { path: /^\/Botoes$/, page: "/app/routes/Buttons/buttons" },
-  { path: /^\/Fundos$/, page: "/app/routes/Background/background" },
-  { path: /^\/Anotacoes$/, page: "/app/routes/Note/note" },
-  { path: /^\/Sobre$/, page: "/app/routes/About/about" },
-  { path: /^\/Contato$/, page: "/app/routes/Contact/contact" },
-];
 
 // ---------- Configurações mobile ----------
 export const mobile = {

@@ -123,12 +123,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .forEach((el) => observer.observe(el));
 
   // CARREGAR SCRIPTS ESSENCIAIS
-  [
-    "/src/modules/layouts.js",
-    "/src/modules/models.js",
-    "/src/modules/children.js",
-    "/src/modules/utils.js",
-  ].forEach((src) => loadJS(src).catch(() => {}));
+  [].forEach((src) => loadJS(src).catch(() => {}));
 });
 
 // ------------------------------

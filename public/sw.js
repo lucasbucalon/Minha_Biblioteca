@@ -1,6 +1,6 @@
 // sw.js
 const AUTO_UPDATE = true; // 🔴 true = network-first, false = cache-first
-const CACHE_NAME = "nexo-cache-v3";
+const CACHE_NAME = "nexo-cache-v4";
 const DYNAMIC_CACHE = "nexo-dynamic-cache";
 
 // Arquivos essenciais do build (index, CSS e PWA assets)

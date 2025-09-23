@@ -15,7 +15,7 @@ const content = document.getElementById("route");
 const loadedLayouts = new Set();
 
 // ------------------------------
-// Carrega child
+// Carrega child sem pageLoad
 // ------------------------------
 async function loadChild(path) {
   const wrapper = document.querySelector("#children-wrapper");
@@ -41,7 +41,7 @@ async function loadChild(path) {
 }
 
 // ------------------------------
-// Carrega layout principal
+// Carrega layout principal com pageLoad
 // ------------------------------
 async function loadLayout(page) {
   if (loadedLayouts.has(page)) return;
@@ -74,9 +74,8 @@ export async function handleRoute(path) {
   const childRoute = childrenRoutes.find((r) => r.path.test(path));
 
   try {
-    await showPageLoad();
-
     if (mainRoute) {
+      await showPageLoad();
       await loadLayout(mainRoute.page);
 
       if (config.useChildren) {
@@ -93,12 +92,11 @@ export async function handleRoute(path) {
     }
 
     if (childRoute) {
-      // Encontra layout principal correto para esse child
+      // Quando é apenas child, não mostra pageLoad
       const layoutRoute =
         routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
       await loadLayout(layoutRoute.page);
       await loadChild(path);
-      hidePageLoad();
       return;
     }
 
@@ -115,7 +113,7 @@ export async function handleRoute(path) {
 // Intercepta links <a>
 // ------------------------------
 function navigate(event) {
-  const link = event.target.closest("a");
+  const link = event.target.closest("a[page]");
   if (!link) return;
 
   const href = link.getAttribute("href");

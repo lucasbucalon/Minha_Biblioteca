@@ -8,12 +8,12 @@
   "url": "https://meusite.com/",
   "type": "website",
   "lang": "pt-br",
-  "image": "./constant/image/Frame.png",
+  "image": "/constant/image/Frame.png",
   "theme_color": "#1e1e1e",
   "background_color": "#1e1e1e",
-  "favicon": "./constant/svg/icon.svg",
+  "favicon": "/constant/svg/icon.svg",
   "global_css": "/styles/global.css",
-  "start_url": "/index.html",
+  "start_url": "/",
   "display": "standalone",
   "display_override": [
     "standalone",
@@ -22,7 +22,7 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "./constant/image/Frame.png",
+      "src": "/constant/image/Frame.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

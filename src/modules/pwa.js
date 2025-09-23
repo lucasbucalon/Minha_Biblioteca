@@ -1,20 +1,31 @@
-// pwa.js
+// src/modules/pwa.js
 import { mobile } from "../main.js";
-// Registra o Service Worker
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js", { type: "module" })
-      .then((reg) => console.log("SW registrado!", reg))
-      .catch((err) => console.error("Falha ao registrar SW:", err));
-  });
-}
 
-// pwa.js
 let deferredPrompt = null;
 
+// ------------------------------
+// Registra o Service Worker
+// ------------------------------
+export function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const reg = await navigator.serviceWorker.register("/sw.js", {
+          type: "module",
+        });
+        console.log("SW registrado!", reg);
+      } catch (err) {
+        console.error("Falha ao registrar SW:", err);
+      }
+    });
+  }
+}
+
+// ------------------------------
+// Configura botão de instalação PWA
+// ------------------------------
 export function setupInstallButton() {
-  const installBtn = document.getElementById(`${mobile.classInstall}`);
+  const installBtn = document.getElementById(mobile.classInstall);
   if (!installBtn) return;
 
   installBtn.style.display = "inline-block"; // sempre visível
@@ -24,38 +35,28 @@ export function setupInstallButton() {
     window.matchMedia("(display-mode: standalone)").matches ||
     window.navigator.standalone === true;
 
-  // ------------------------------
-  // iOS Safari -> instruções manuais
-  // ------------------------------
+  // iOS Safari → instruções manuais
   if (isIos && !isInStandalone) {
     installBtn.textContent = "Adicionar à Tela Inicial";
-    installBtn.onclick = () => {
-      alert(mobile.alertIphone);
-    };
+    installBtn.onclick = () => alert(mobile.alertIphone);
     return;
   }
 
-  // ------------------------------
-  // Evento capturado quando suportado (Android/Chrome/Edge)
-  // ------------------------------
+  // Captura evento beforeinstallprompt (Android/Chrome/Edge)
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault();
     deferredPrompt = e;
     console.log("Evento beforeinstallprompt capturado!");
   });
 
-  // ------------------------------
-  // Se já estiver instalado → botão vira 'Atualizar'
-  // ------------------------------
+  // Se já instalado → botão vira 'Atualizar'
   if (isInStandalone) {
     installBtn.textContent = "Atualizar App";
-    installBtn.onclick = () => location.reload(true);
+    installBtn.onclick = () => location.reload();
     return;
   }
 
-  // ------------------------------
   // Clique no botão
-  // ------------------------------
   installBtn.addEventListener("click", async () => {
     if (!deferredPrompt) {
       alert(mobile.alertDesktop);
@@ -68,23 +69,27 @@ export function setupInstallButton() {
     if (choice.outcome === "accepted") {
       console.log("Usuário aceitou instalar o app!");
     } else {
-      alert("Você cancelou a instalação do app.");
+      console.log("Usuário cancelou a instalação do app.");
     }
 
     deferredPrompt = null;
   });
 
-  // ------------------------------
   // Evento app instalado
-  // ------------------------------
   window.addEventListener("appinstalled", () => {
     console.log("App instalado!");
     if (installBtn) {
       installBtn.textContent = "Atualizar App";
-      installBtn.onclick = () => location.reload(true);
+      installBtn.onclick = () => location.reload();
     }
   });
 }
 
-// compatibilidade com outros módulos
+// ------------------------------
+// Inicializa automaticamente
+// ------------------------------
+registerServiceWorker();
+setupInstallButton();
+
+// Compatibilidade com outros módulos
 window.setupInstallButton = setupInstallButton;

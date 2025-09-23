@@ -1,25 +1,15 @@
 // sw.js
-// import { gateway } from "./src/main.js";
+const AUTO_UPDATE = true; // 🔴 true = network-first, false = cache-first
+const CACHE_NAME = "nexo-cache-v2";
+const DYNAMIC_CACHE = "nexo-dynamic-cache";
 
-const AUTO_UPDATE = true; // 🔴 true ativa atualização automática
-const CACHE_NAME = "spa-cache-v6";
-
-// Arquivos essenciais para cache
 const URLS_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./css/global.css",
-  "./modules/route.js",
-  "./src/main.js",
-  "./modules/components.js",
-  "./modules/framework.js",
-  "./modules/optimize.js",
-  "./modules/pwa.js",
-  "./modules/sheet.js",
-  "./modules/localstorage.js",
-  "./app/pages/error/404.html",
-  "./app/pages/error/500.html",
-  "./app/pages/error/offline.html",
+  "/",
+  "/index.html",
+  "/css/global.css",
+  "/app/pages/error/404.html",
+  "/app/pages/error/500.html",
+  "/app/pages/error/offline.html",
 ];
 
 // ------------------------------
@@ -28,9 +18,7 @@ const URLS_TO_CACHE = [
 self.addEventListener("install", (event) => {
   if (!AUTO_UPDATE) {
     event.waitUntil(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.addAll(URLS_TO_CACHE);
-      })
+      caches.open(CACHE_NAME).then((cache) => cache.addAll(URLS_TO_CACHE))
     );
   }
   self.skipWaiting();
@@ -40,60 +28,83 @@ self.addEventListener("install", (event) => {
 // Ativação
 // ------------------------------
 self.addEventListener("activate", (event) => {
-  if (AUTO_UPDATE) {
-    // limpa todos os caches antigos
-    event.waitUntil(
-      caches
-        .keys()
-        .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
-    );
-  } else {
-    // remove apenas caches antigos que não correspondem ao atual
-    event.waitUntil(
-      caches
-        .keys()
-        .then((keys) =>
-          Promise.all(
-            keys.map((key) => key !== CACHE_NAME && caches.delete(key))
-          )
-        )
-    );
-  }
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME && key !== DYNAMIC_CACHE)
+            return caches.delete(key);
+        })
+      )
+    )
+  );
   self.clients.claim();
 });
 
 // ------------------------------
-// Estratégia fetch
+// Fetch handler
 // ------------------------------
 self.addEventListener("fetch", (event) => {
+  const requestURL = new URL(event.request.url);
+
+  // Ignora requests externas
+  if (requestURL.origin !== location.origin) return;
+
   event.respondWith(
     (async () => {
-      try {
-        // 🔄 Auto-update: sempre tenta rede primeiro
-        const networkResponse = await fetch(event.request);
-        if (!AUTO_UPDATE) {
-          // atualiza cache para cache-first se não estiver em auto-update
-          const cache = await caches.open(CACHE_NAME);
-          cache.put(event.request, networkResponse.clone());
+      const dynamicCache = await caches.open(DYNAMIC_CACHE);
+
+      if (AUTO_UPDATE) {
+        // network-first: tenta rede, depois cache
+        try {
+          const networkResponse = await fetch(event.request);
+          if (
+            requestURL.pathname.startsWith("/components/") ||
+            requestURL.pathname.endsWith(".js") ||
+            requestURL.pathname.endsWith(".html")
+          ) {
+            dynamicCache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch (err) {
+          const cachedResponse = await caches.match(event.request);
+          if (cachedResponse) return cachedResponse;
+
+          if (event.request.mode === "navigate") {
+            const offlinePage = await caches.match(
+              "/app/pages/error/offline.html"
+            );
+            return offlinePage || new Response("Offline", { status: 503 });
+          }
+
+          const errorPage = await caches.match("/app/pages/error/500.html");
+          return errorPage || new Response("Erro interno", { status: 500 });
         }
-        return networkResponse;
-      } catch (err) {
-        // rede falhou → tenta cache
+      } else {
+        // cache-first: tenta cache, depois rede
         const cachedResponse = await caches.match(event.request);
         if (cachedResponse) return cachedResponse;
 
-        // fallback offline
-        if (event.request.mode === "navigate") {
-          // se for navegação (rota do SPA), retorna página offline
-          const offlinePage = await caches.match(
-            "./app/pages/error/offline.html"
-          );
-          return offlinePage || new Response("Offline", { status: 503 });
+        try {
+          const networkResponse = await fetch(event.request);
+          if (
+            requestURL.pathname.startsWith("/components/") ||
+            requestURL.pathname.endsWith(".js") ||
+            requestURL.pathname.endsWith(".html")
+          ) {
+            dynamicCache.put(event.request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch (err) {
+          if (event.request.mode === "navigate") {
+            const offlinePage = await caches.match(
+              "/app/pages/error/offline.html"
+            );
+            return offlinePage || new Response("Offline", { status: 503 });
+          }
+          const errorPage = await caches.match("/app/pages/error/500.html");
+          return errorPage || new Response("Erro interno", { status: 500 });
         }
-
-        // fallback geral: retorna resposta 500
-        const errorPage = await caches.match("./app/pages/error/500.html");
-        return errorPage || new Response("Erro interno", { status: 500 });
       }
     })()
   );

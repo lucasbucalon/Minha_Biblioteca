@@ -25,7 +25,7 @@ export function registerServiceWorker() {
 // Configura botão de instalação PWA
 // ------------------------------
 export function setupInstallButton() {
-  const installBtn = document.getElementById(mobile.classInstall);
+  const installBtn = document.getElementById(`${mobile.classInstall}`);
   if (!installBtn) return;
 
   installBtn.style.display = "inline-block"; // sempre visível

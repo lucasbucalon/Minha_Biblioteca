@@ -8,9 +8,6 @@ const URLS_TO_CACHE = [
   "/index.html",
   "/styles/global.css",
   "/src/main.js",
-  "/app/pages/error/404.html",
-  "/app/pages/error/500.html",
-  "/app/pages/error/offline.html",
 ];
 
 // ------------------------------

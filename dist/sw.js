@@ -6,7 +6,8 @@ const DYNAMIC_CACHE = "nexo-dynamic-cache";
 const URLS_TO_CACHE = [
   "/",
   "/index.html",
-  "/css/global.css",
+  "/styles/global.css",
+  "/src/main.js",
   "/app/pages/error/404.html",
   "/app/pages/error/500.html",
   "/app/pages/error/offline.html",

@@ -7,7 +7,7 @@ const DYNAMIC_CACHE = "nexo-dynamic-cache";
 const ESSENTIALS = [
   "/",
   "/index.html",
-  "/global.css", // ajuste para o path real do CSS no build
+  "/global.css", 
   "/manifest.json",
   "/sw.js",
   "/favicon.ico",

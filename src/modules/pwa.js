@@ -17,9 +17,7 @@ export function registerServiceWorker(swPath = "/sw.js") {
 
 let deferredPrompt = null;
 
-// ------------------------------
-// Detecta se PWA já está instalado
-// ------------------------------
+// Verifica se o app já está instalado
 function isInstalled() {
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
@@ -27,21 +25,18 @@ function isInstalled() {
   );
 }
 
-// ------------------------------
-// Setup botão de instalação
-// ------------------------------
-export function setupInstallButton() {
-  const btn = document.getElementById("btn-install");
+// Configura o botão de instalação
+export function setupInstallButton(btnId = "btn-install") {
+  const btn = document.getElementById(btnId);
   if (!btn) return;
 
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const installed = isInstalled();
 
-  btn.style.display = "inline-block";
-
-  // Já instalado → botão vira atualizar
+  // Se já instalado → transforma em atualizar
   if (installed) {
     btn.textContent = "Atualizar App";
+    btn.style.display = "inline-block";
     btn.onclick = () => location.reload();
     return;
   }
@@ -49,29 +44,29 @@ export function setupInstallButton() {
   // iOS → instruções manuais
   if (isIos) {
     btn.textContent = "Adicionar à Tela Inicial";
+    btn.style.display = "inline-block";
     btn.onclick = () =>
-      alert(
-        mobile?.alertIphone ||
-          "Toque no botão Compartilhar e depois em 'Adicionar à Tela Inicial'."
-      );
+      alert("Toque no botão Compartilhar e depois 'Adicionar à Tela Inicial'.");
     return;
   }
 
-  // Captura evento beforeinstallprompt (Chrome, Edge, Opera)
+  // Captura evento beforeinstallprompt (Chrome/Edge/Opera)
   window.addEventListener("beforeinstallprompt", (e) => {
     e.preventDefault(); // evita prompt automático
     deferredPrompt = e;
     btn.textContent = "Instalar App";
+    btn.style.display = "inline-block";
   });
 
-  // Clique no botão de instalação
+  // Clique no botão
   btn.addEventListener("click", async () => {
     if (deferredPrompt) {
-      // Instalação nativa suportada
+      // Prompt de instalação suportado
       deferredPrompt.prompt();
       const choice = await deferredPrompt.userChoice;
+
       if (choice.outcome === "accepted") {
-        console.log("App instalado via prompt!");
+        console.log("Usuário aceitou instalar o app!");
         btn.textContent = "Atualizar App";
         btn.onclick = () => location.reload();
       } else {
@@ -79,36 +74,21 @@ export function setupInstallButton() {
       }
       deferredPrompt = null;
     } else {
-      // Tenta criar atalho automático no desktop (Chrome, Edge)
-      if ("launchQueue" in window || navigator.canShare) {
-        try {
-          // fallback de atalho via link temporário
-          const a = document.createElement("a");
-          a.href = window.location.href;
-          a.rel = "shortcut icon";
-          a.click();
-          btn.textContent = "App Adicionado!";
-          return;
-        } catch (err) {
-          console.warn("Falha ao criar atalho automático:", err);
-        }
-      }
-
-      // fallback geral → instrução manual
+      // fallback → instrução manual
       alert(
-        mobile?.alertDesktop ||
-          "Seu navegador não suporta instalação automática. Crie um atalho manualmente."
+        "Seu navegador não suporta instalação automática. Crie um atalho manualmente."
       );
     }
   });
 
-  // Evento app instalado
+  // Evento quando app é instalado
   window.addEventListener("appinstalled", () => {
     console.log("App instalado!");
     btn.textContent = "Atualizar App";
     btn.onclick = () => location.reload();
+    btn.style.display = "inline-block";
   });
 }
 
-// compatibilidade global
+// Compatibilidade global
 window.setupInstallButton = setupInstallButton;

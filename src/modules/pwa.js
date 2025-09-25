@@ -45,8 +45,6 @@ export function setupInstallButton() {
     return;
   }
 
-  btn.style.display = "none"; // inicialmente oculto
-
   // ------------------------------
   // iOS -> instruções manuais
   // ------------------------------

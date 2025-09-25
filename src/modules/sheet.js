@@ -1,7 +1,8 @@
-// sheet.js — Fade Helpers + Smooth Scroll
-// Não importa main.js; main.js chamará configureSheet()
+// sheet.js
 
-// Configuração interna padrão (será sobrescrita via configureSheet)
+// ------------------------------
+// Configurações internas padrão
+// ------------------------------
 let cfgInterno = {
   scroll: {
     enabled: false,
@@ -16,7 +17,9 @@ let cfgInterno = {
   },
 };
 
-// ---------------- Fade Helpers ----------------
+// ------------------------------
+// Fade Helpers
+// ------------------------------
 export function fadeOut(el, duration = 200, translate = "6px") {
   return new Promise((resolve) => {
     if (!el) return resolve();
@@ -41,13 +44,15 @@ export function fadeIn(el, duration = 200) {
   });
 }
 
-// ---------------- Espera Transição ----------------
+// ------------------------------
+// Espera transição de elemento
+// ------------------------------
 function onceTransitionEnd(el, timeoutMs = 250) {
   return new Promise((resolve) => {
     if (!el) return resolve();
     let resolved = false;
     const timer = setTimeout(() => {
-      if (!resolved) return;
+      if (resolved) return;
       resolved = true;
       cleanup();
       resolve();
@@ -69,12 +74,14 @@ function onceTransitionEnd(el, timeoutMs = 250) {
   });
 }
 
-// ---------------- applyFade ----------------
+// ------------------------------
+// applyFade para renderizações SPA
+// ------------------------------
 const fadeMap = new WeakMap();
+
 export async function applyFade(el, render, durationOverride) {
   const fadeCfg = cfgInterno.fade || { enabled: false };
-  if (!fadeCfg.enabled) return render();
-  if (!el) return render();
+  if (!fadeCfg.enabled || !el) return render();
 
   const duration = durationOverride ?? fadeCfg.duration;
   const translate = fadeCfg.useTranslate ? fadeCfg.translateValue : null;
@@ -115,17 +122,13 @@ export async function applyFade(el, render, durationOverride) {
   }
 }
 
-// ---------------- Smooth Scroll ----------------
+// ------------------------------
+// Smooth Scroll SPA
+// ------------------------------
 let smoothState = { initialized: false, cleanup: null };
 
-function mergeDefaults(target, src) {
-  for (const k in src) {
-    if (src[k] && typeof src[k] === "object" && !Array.isArray(src[k])) {
-      target[k] = target[k] || {};
-      mergeDefaults(target[k], src[k]);
-    } else if (target[k] === undefined) target[k] = src[k];
-  }
-  return target;
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
 function initSmoothScroll(scrollCfg) {
@@ -148,10 +151,6 @@ function initSmoothScroll(scrollCfg) {
   let target = window.scrollY;
   let current = target;
   let running = false;
-
-  function clamp(v, a, b) {
-    return Math.max(a, Math.min(b, v));
-  }
 
   function animate() {
     const diff = target - current;
@@ -206,13 +205,17 @@ function initSmoothScroll(scrollCfg) {
   console.log("Smooth scroll initialized:", cfgScroll);
 }
 
-// ---------------- configureSheet ----------------
+// ------------------------------
+// Configure sheet
+// ------------------------------
 export function configureSheet(configFromMain) {
   cfgInterno = { ...cfgInterno, ...configFromMain };
-  initSmoothScroll(cfgInterno.scroll); // inicializa scroll com as configs passadas
+  initSmoothScroll(cfgInterno.scroll);
 }
 
-// ---------------- cleanup opcional ----------------
+// ------------------------------
+// Cleanup smooth scroll
+// ------------------------------
 export function cleanupSmooth() {
   if (smoothState.cleanup) smoothState.cleanup();
 }

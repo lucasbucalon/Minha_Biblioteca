@@ -1,4 +1,4 @@
-// gateways.js
+// /modules/gateways.js
 import { gateway } from "../main.js";
 import { fetchPage } from "./children.js";
 import { handleRoute } from "./route.js";
@@ -6,14 +6,14 @@ import { handleRoute } from "./route.js";
 const content = document.getElementById("route");
 
 // ------------------------------
-// Função genérica para carregar qualquer página de gateway (erros)
+// Função genérica para carregar gateway (erros ou pages)
 // ------------------------------
-async function loadGateway(type, fallbackText = "Erro") {
+async function loadGateway(type, fallbackTitle = "Erro") {
   const path = gateway.error?.[type];
   if (!path) {
     console.error(`gateway.error.${type} não configurado`);
-    content.innerHTML = `<h1>${fallbackText}</h1>`;
-    document.title = fallbackText;
+    content.innerHTML = `<h1>${fallbackTitle}</h1>`;
+    document.title = fallbackTitle;
     return;
   }
 
@@ -22,11 +22,11 @@ async function loadGateway(type, fallbackText = "Erro") {
       path.endsWith(".html") ? path : `${path}.html`
     );
     content.innerHTML = html;
-    document.title = fallbackText;
+    document.title = fallbackTitle;
   } catch (err) {
     console.error(`Falha ao carregar gateway ${type}:`, err);
-    content.innerHTML = `<h1>${fallbackText}</h1>`;
-    document.title = fallbackText;
+    content.innerHTML = `<h1>${fallbackTitle}</h1>`;
+    document.title = fallbackTitle;
   }
 }
 
@@ -49,9 +49,12 @@ export async function showPageLoad() {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      background: "rgba(0,0,0,0.85)",
+      background: "rgba(0,0,0,1)",
       zIndex: "9999",
       color: "#fff",
+      fontFamily: "sans-serif",
+      fontSize: "1.2rem",
+      textAlign: "center",
     });
     document.body.appendChild(loader);
   }
@@ -79,7 +82,7 @@ export function hidePageLoad() {
 }
 
 // ------------------------------
-// Atalhos para páginas de erro
+// Páginas de erro pré-definidas
 // ------------------------------
 export async function show404() {
   history.pushState({}, "", "/404");
@@ -118,13 +121,15 @@ export async function loadFlow(path) {
     document.title = flowRoute.title || "Flow Page";
   } catch (err) {
     console.error("Falha ao carregar flow:", err);
+    content.innerHTML = `<h1>Erro ao carregar flow</h1>`;
+    document.title = "Erro Flow";
   } finally {
     hidePageLoad();
   }
 }
 
 // ------------------------------
-// Tratamento do botão de voltar/avançar
+// Tratamento do botão voltar/avançar
 // ------------------------------
 window.addEventListener("popstate", () => {
   const path = location.pathname;
@@ -133,7 +138,6 @@ window.addEventListener("popstate", () => {
   if (flowRoute) {
     loadFlow(path);
   } else {
-    // fallback para SPA normal
     handleRoute(path);
   }
 });

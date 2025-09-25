@@ -1,11 +1,10 @@
-// /modules/children.js
-
+// children.js
 const pageCache = {};
 const loadedStyles = new Set();
 const loadedScripts = new Set();
 
 // ------------------------------
-// Busca o HTML da página ou child
+// Busca HTML do child ou página, com cache
 // ------------------------------
 export async function fetchPage(url) {
   if (pageCache[url]) return pageCache[url];
@@ -19,7 +18,7 @@ export async function fetchPage(url) {
 }
 
 // ------------------------------
-// Garante que os estilos sejam aplicados
+// Aplica estilos <link> do HTML carregado
 // ------------------------------
 export async function ensureStyles(root) {
   const promises = [];
@@ -44,13 +43,12 @@ export async function ensureStyles(root) {
 }
 
 // ------------------------------
-// Executa scripts inline e externos
+// Executa scripts internos e externos do child
 // ------------------------------
 export function executeScripts(wrapper) {
   wrapper.querySelectorAll("script").forEach((oldScript) => {
     const src = oldScript.src;
 
-    // Evita carregar script externo repetido
     if (src && loadedScripts.has(src)) {
       oldScript.remove();
       return;
@@ -74,18 +72,16 @@ export function executeScripts(wrapper) {
 }
 
 // ------------------------------
-// Atualiza children na rota atual
+// Atualiza child na rota atual
 // ------------------------------
 export async function updateChildren(container, html, page) {
   const temp = document.createElement("div");
   temp.innerHTML = html;
 
-  // Garante que todos os estilos do child sejam aplicados
   await ensureStyles(temp);
 
   const newContent = temp.querySelector("#children") || temp;
 
-  // Cria wrapper se não existir
   let wrapper = container.querySelector("#children-wrapper");
   if (!wrapper) {
     wrapper = document.createElement("div");
@@ -93,15 +89,13 @@ export async function updateChildren(container, html, page) {
     container.appendChild(wrapper);
   }
 
-  // Insere o conteúdo novo
   const fragment = document.createDocumentFragment();
   fragment.append(...newContent.childNodes);
   wrapper.replaceChildren(fragment);
 
-  // Executa scripts do child
+  // Executa scripts
   executeScripts(wrapper);
 
-  // Executa loadConstants se existir
   if (typeof window.loadConstants === "function") {
     try {
       window.loadConstants(wrapper);
@@ -110,7 +104,6 @@ export async function updateChildren(container, html, page) {
     }
   }
 
-  // Atualiza título e meta tags
   const routeTitle = temp.querySelector("title")?.textContent;
   if (routeTitle) document.title = routeTitle;
 
@@ -120,7 +113,6 @@ export async function updateChildren(container, html, page) {
     if (key) metas[key] = m.getAttribute("content");
   });
 
-  // Dispara evento SPA
   document.dispatchEvent(
     new CustomEvent("spa:pageLoaded", {
       detail: { page, title: routeTitle, metas },
@@ -129,13 +121,12 @@ export async function updateChildren(container, html, page) {
 }
 
 // ------------------------------
-// Detecta child baseado na URL
+// Detecta o child atual baseado na URL
 // ------------------------------
 export function getCurrentChild(childrenRoutes, config) {
   const pathParts = location.pathname.replace(/^\/+/, "").split("/");
+  const currentPath = pathParts[1] ? `/${pathParts[1]}` : config.defaultChild;
 
-  const current = pathParts[1] ? `/${pathParts[1]}` : config.defaultChild;
-
-  const matched = childrenRoutes.find((r) => r.path.test(current));
-  return matched ? current : config.defaultChild;
+  const matched = childrenRoutes.find((r) => r.path.test(currentPath));
+  return matched ? currentPath : config.defaultChild;
 }

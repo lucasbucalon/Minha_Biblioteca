@@ -2,31 +2,19 @@
 import { imageMap, linkMap, iconMap } from "../main.js";
 
 //------------------
-// IFRAME ROUTES
+// IMAGENS DINÂMICAS
 //------------------
-
-//------------------
-// IMAGENS
-//------------------
-function applyImages(root) {
+function applyImages(root = document) {
   const images = root.querySelectorAll("[data-image]");
   images.forEach((img) => {
-    const name = img.getAttribute("data-image");
+    const name = img.dataset.image;
     const cfg = imageMap[name];
-    if (!cfg) {
-      console.warn(`⚠️ data-image="${name}" não encontrado no imageMap`);
-      return;
-    }
+    if (!cfg)
+      return console.warn(`⚠️ data-image="${name}" não encontrado no imageMap`);
 
-    img.alt = cfg.alt || name;
-    img.title = cfg.title || name;
-    img.decoding = "async";
-    img.loading = "lazy";
-    img.fetchPriority = cfg.fetchpriority || "low";
-
-    let finalSrc = cfg.src;
     const isDark =
       cfg.dark && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    let src = cfg.src;
 
     if (cfg.set) {
       const w = window.innerWidth;
@@ -34,30 +22,33 @@ function applyImages(root) {
         (!cfg.set.minWidth || w >= cfg.set.minWidth) &&
         (!cfg.set.maxWidth || w <= cfg.set.maxWidth)
       ) {
-        finalSrc = isDark && cfg.set.dark ? cfg.set.dark : cfg.set.src;
+        src = isDark && cfg.set.dark ? cfg.set.dark : cfg.set.src;
       } else if (isDark && cfg.dark) {
-        finalSrc = cfg.dark;
+        src = cfg.dark;
       }
     } else if (isDark && cfg.dark) {
-      finalSrc = cfg.dark;
+      src = cfg.dark;
     }
 
-    img.src = finalSrc;
+    img.src = src;
+    img.alt = cfg.alt || name;
+    img.title = cfg.title || name;
+    img.decoding = "async";
+    img.loading = "lazy";
+    img.fetchPriority = cfg.fetchpriority || "low";
   });
 }
 
 //------------------
-// LINKS
+// LINKS DINÂMICOS
 //------------------
-function applyLinks(root) {
+function applyLinks(root = document) {
   const links = root.querySelectorAll("[data-link]");
   links.forEach((link) => {
-    const name = link.getAttribute("data-link");
+    const name = link.dataset.link;
     const cfg = linkMap[name];
-    if (!cfg) {
-      console.warn(`⚠️ data-link="${name}" não encontrado no linkMap`);
-      return;
-    }
+    if (!cfg)
+      return console.warn(`⚠️ data-link="${name}" não encontrado no linkMap`);
 
     link.href = cfg.href;
     link.title = cfg.title || name;
@@ -65,15 +56,8 @@ function applyLinks(root) {
 
     if (cfg.type) link.type = cfg.type;
     if (cfg["aria-label"]) link.setAttribute("aria-label", cfg["aria-label"]);
-
-    if (cfg.download) {
-      if (cfg.download === true) {
-        link.setAttribute("download", "");
-      } else {
-        link.setAttribute("download", cfg.download);
-      }
-    }
-
+    if (cfg.download)
+      link.setAttribute("download", cfg.download === true ? "" : cfg.download);
     if (cfg.target) link.target = cfg.target;
   });
 }
@@ -87,37 +71,33 @@ class IconElement extends HTMLElement {
   }
 
   render() {
-    const name = this.getAttribute("data-icon");
+    const name = this.dataset.icon;
     const cfg = iconMap[name];
-    if (!cfg) return;
+    if (!cfg || this.querySelector("img")) return;
 
-    if (!this.querySelector("img")) {
-      const img = document.createElement("img");
-      img.src = cfg.src || cfg; // suporta string simples ou objeto
-      img.alt = this.getAttribute("alt") || name;
-      img.title = this.getAttribute("title") || name;
-      img.loading = "lazy";
-      img.decoding = "async";
+    const img = document.createElement("img");
+    img.src = cfg.src || cfg;
+    img.alt = this.getAttribute("alt") || name;
+    img.title = this.getAttribute("title") || name;
+    img.decoding = "async";
+    img.loading = "lazy";
+    img.setAttribute("role", "img");
 
-      if (this.hasAttribute("width")) img.width = this.getAttribute("width");
-      if (this.hasAttribute("height")) img.height = this.getAttribute("height");
+    if (this.hasAttribute("width")) img.width = this.getAttribute("width");
+    if (this.hasAttribute("height")) img.height = this.getAttribute("height");
 
-      img.setAttribute("role", "img");
-      this.appendChild(img);
-    }
+    this.appendChild(img);
   }
 }
 
-if (!customElements.get("my-icon")) {
+if (!customElements.get("my-icon"))
   customElements.define("my-icon", IconElement);
-}
 
 //------------------
 // REAPLICAR ICONS DINAMICAMENTE
 //------------------
-export function applyIcons(root = document) {
-  const icons = root.querySelectorAll("my-icon[data-icon]");
-  icons.forEach((icon) => {
+function applyIcons(root = document) {
+  root.querySelectorAll("my-icon[data-icon]").forEach((icon) => {
     if (typeof icon.render === "function") icon.render();
   });
 }
@@ -146,5 +126,4 @@ export function observeAssets(container = document.getElementById("route")) {
 export function initAssets() {
   applyAssets();
   observeAssets();
-  // initIframeRoutes();
 }

@@ -5,7 +5,6 @@ import { handleRoute } from "./modules/route.js";
 import { enableSwipeNavigation } from "./modules/mobile.js";
 import { lazyLoadRoute } from "./modules/optimize.js";
 import { configureSheet } from "./modules/sheet.js"; // atualizado
-import { updateMeta } from "./modules/meta.js";
 import { initAssets } from "./modules/utils.js";
 initAssets();
 
@@ -16,6 +15,7 @@ import "./modules/children.js";
 import "./modules/layouts.js";
 import "./modules/models.js";
 import "./modules/pwa.js";
+import "./modules/meta.js";
 
 // ---------- Configurações gerais ----------
 export const config = {
@@ -43,21 +43,6 @@ export const childrenRoutes = [
   { path: /^\/Sobre$/, page: "/app/routes/About/about" },
   { path: /^\/Contato$/, page: "/app/routes/Contact/contact" },
 ];
-
-// ---------- Meta tags ----------
-
-updateMeta({
-  title: "Minha Biblioteca",
-  description:
-    "Um site para organizar ideias, anotações e projetos de forma prática.",
-  url: window.location.href,
-  image: "/constant/image/Frame.png",
-  type: "website",
-  author: "Lucas Bucalon",
-  keywords: "programação, SPA, SEO, marketing, web design",
-  tagName: "@bibliotecaspa",
-  themeColor: "#1e1e1e",
-});
 
 // ---------- Mapas de recursos ----------
 export const imageMap = {

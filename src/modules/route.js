@@ -1,5 +1,6 @@
 // route.js
 import { routes, childrenRoutes, config, gateway } from "../main.js";
+import { applyGlobalMeta, injectGlobalMeta } from "./meta.js";
 import { fetchPage, updateChildren } from "./children.js";
 import { applyFade } from "./sheet.js";
 import {
@@ -15,44 +16,70 @@ const content = document.getElementById("route");
 const loadedLayouts = new Set();
 
 // ------------------------------
+// Inicializa meta global
+// ------------------------------
+applyGlobalMeta();
+
+// ------------------------------
+// Atualiza título/descrição específico
+// ------------------------------
+function updateRouteMeta(route) {
+  if (!route?.meta) return;
+  updateMeta(route.meta);
+}
+
+// ------------------------------
+// Carrega layout principal com pageLoad
+// ------------------------------
+async function loadLayout(page, routeMeta) {
+  if (loadedLayouts.has(page)) return;
+
+  try {
+    const html = await fetchPage(
+      page.endsWith(".html") ? page : `${page}.html`
+    );
+    content.innerHTML = html;
+
+    injectGlobalMeta();
+
+    updateRouteMeta(routeMeta);
+
+    loadedLayouts.add(page);
+  } catch (err) {
+    show500();
+  }
+}
+
+// ------------------------------
 // Carrega child sem pageLoad
 // ------------------------------
 async function loadChild(path) {
   const wrapper = document.querySelector("#children-wrapper");
   if (!wrapper) return;
 
-  const route = childrenRoutes.find((r) => r.path.test(path));
-  if (!route) {
+  const childRoute = childrenRoutes.find((r) => r.path.test(path));
+  if (!childRoute) {
     show404();
     return;
   }
 
   try {
     const html = await fetchPage(
-      route.page.endsWith(".html") ? route.page : `${route.page}.html`
+      childRoute.page.endsWith(".html")
+        ? childRoute.page
+        : `${childRoute.page}.html`
     );
+
     await applyFade(wrapper, async () => {
-      await updateChildren(wrapper, html, route.page);
+      await updateChildren(wrapper, html, childRoute.page);
+
+      injectGlobalMeta();
+
+      updateRouteMeta(childRoute);
     });
   } catch (err) {
     if (!navigator.onLine) showOffline();
     else show500();
-  }
-}
-
-// ------------------------------
-// Carrega layout principal com pageLoad
-// ------------------------------
-async function loadLayout(page) {
-  if (loadedLayouts.has(page)) return;
-  try {
-    const html = await fetchPage(
-      page.endsWith(".html") ? page : `${page}.html`
-    );
-    content.innerHTML = html;
-    loadedLayouts.add(page);
-  } catch (err) {
-    show500();
   }
 }
 
@@ -64,7 +91,6 @@ export async function handleRoute(path) {
   const startTime = Date.now();
   const minLoadTime = gateway.load.loadTime || 1000;
 
-  // Flows → refresh completo
   if (gateway.flows.some((f) => f.path.test(path))) {
     loadFlow(path);
     return;
@@ -76,7 +102,7 @@ export async function handleRoute(path) {
   try {
     if (mainRoute) {
       await showPageLoad();
-      await loadLayout(mainRoute.page);
+      await loadLayout(mainRoute.page, mainRoute.meta);
 
       if (config.useChildren) {
         const pathParts = path.split("/").filter(Boolean);
@@ -92,10 +118,9 @@ export async function handleRoute(path) {
     }
 
     if (childRoute) {
-      // Quando é apenas child, não mostra pageLoad
       const layoutRoute =
         routes.find((r) => r.path.test(`/${config.dirsChild}`)) || routes[1];
-      await loadLayout(layoutRoute.page);
+      await loadLayout(layoutRoute.page, layoutRoute.meta);
       await loadChild(path);
       return;
     }
@@ -110,7 +135,7 @@ export async function handleRoute(path) {
 }
 
 // ------------------------------
-// Intercepta links <a>
+// Intercepta links <a> para SPA
 // ------------------------------
 function navigate(event) {
   const link = event.target.closest("a[page]");

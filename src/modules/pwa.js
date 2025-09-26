@@ -1,6 +1,8 @@
 // pwa.js
 import { mobile } from "../main.js";
 
+let deferredPrompt = null;
+
 /**
  * Registra o Service Worker (PWA base)
  */
@@ -9,86 +11,91 @@ export function registerServiceWorker(swPath = "/sw.js") {
 
   window.addEventListener("load", () => {
     navigator.serviceWorker
-      .register(swPath, { type: "module" })
+      .register(swPath /*, { type: "module" } */)
       .then((reg) => console.log("[PWA] Service Worker registrado:", reg))
       .catch((err) => console.error("[PWA] Falha ao registrar SW:", err));
   });
 }
 
-let deferredPrompt = null;
+/**
+ * Configura o botão de instalação PWA
+ */
+export function setupInstallButton() {
+  const installBtn = document.getElementById(mobile.classInstall);
+  if (!installBtn) {
+    console.warn("[PWA] Botão de instalação não encontrado.");
+    return;
+  }
 
-// Verifica se o app já está instalado
-function isInstalled() {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    window.navigator.standalone === true
-  );
-}
-
-// Configura o botão de instalação
-export function setupInstallButton(btnId = "btn-install") {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
+  installBtn.style.display = "inline-block"; 
 
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const installed = isInstalled();
+  const isInStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
 
-  // Se já instalado → transforma em atualizar
-  if (installed) {
-    btn.textContent = "Atualizar App";
-    btn.style.display = "inline-block";
-    btn.onclick = () => location.reload();
+  // ------------------------------
+  // iOS Safari → instalação manual
+  // ------------------------------
+  if (isIos && !isInStandalone) {
+    installBtn.textContent = "Adicionar à Tela Inicial";
+    installBtn.onclick = () => alert(mobile.alertIphone);
     return;
   }
 
-  // iOS → instruções manuais
-  if (isIos) {
-    btn.textContent = "Adicionar à Tela Inicial";
-    btn.style.display = "inline-block";
-    btn.onclick = () =>
-      alert("Toque no botão Compartilhar e depois 'Adicionar à Tela Inicial'.");
-    return;
-  }
-
-  // Captura evento beforeinstallprompt (Chrome/Edge/Opera)
+  // ------------------------------
+  // Evento capturado no Android/Chrome/Edge
+  // ------------------------------
   window.addEventListener("beforeinstallprompt", (e) => {
-    e.preventDefault(); // evita prompt automático
+    e.preventDefault();
     deferredPrompt = e;
-    btn.textContent = "Instalar App";
-    btn.style.display = "inline-block";
+    console.log("[PWA] Evento beforeinstallprompt capturado!");
   });
 
-  // Clique no botão
-  btn.addEventListener("click", async () => {
-    if (deferredPrompt) {
-      // Prompt de instalação suportado
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
+  // ------------------------------
+  // Caso o app já esteja instalado
+  // ------------------------------
+  if (isInStandalone) {
+    installBtn.textContent = "Atualizar App";
+    installBtn.onclick = () => location.reload(true);
+    return;
+  }
 
-      if (choice.outcome === "accepted") {
-        console.log("Usuário aceitou instalar o app!");
-        btn.textContent = "Atualizar App";
-        btn.onclick = () => location.reload();
-      } else {
-        console.log("Usuário cancelou instalação.");
-      }
-      deferredPrompt = null;
-    } else {
-      // fallback → instrução manual
-      alert(
-        "Seu navegador não suporta instalação automática. Crie um atalho manualmente."
-      );
+  // ------------------------------
+  // Clique no botão de instalação
+  // ------------------------------
+  installBtn.addEventListener("click", async () => {
+    if (!deferredPrompt) {
+      alert(mobile.alertDesktop);
+      return;
     }
+
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+
+    if (choice.outcome === "accepted") {
+      console.log("[PWA] Usuário aceitou instalar o app!");
+    } else {
+      console.log("[PWA] Usuário recusou instalar o app.");
+    }
+
+    deferredPrompt = null;
   });
 
-  // Evento quando app é instalado
+  // ------------------------------
+  // Evento: app instalado
+  // ------------------------------
   window.addEventListener("appinstalled", () => {
-    console.log("App instalado!");
-    btn.textContent = "Atualizar App";
-    btn.onclick = () => location.reload();
-    btn.style.display = "inline-block";
+    console.log("[PWA] App instalado com sucesso!");
+    if (installBtn) {
+      installBtn.textContent = "Atualizar App";
+      installBtn.onclick = () => location.reload(true);
+    }
   });
 }
 
-// Compatibilidade global
-window.setupInstallButton = setupInstallButton;
+// ------------------------------
+// Inicialização automática
+// ------------------------------
+registerServiceWorker();
+window.setupInstallButton = setupInstallButton; 
